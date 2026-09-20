@@ -1,0 +1,42 @@
+name: Bug report
+description: Something does not work as expected
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What did you do, what did you expect, what happened instead?
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: F2PX version
+      description: Settings → About
+      placeholder: "1.0.0"
+    validations:
+      required: true
+  - type: dropdown
+    id: level
+    attributes:
+      label: Privacy level
+      description: Privacy center → Privacy level
+      options: [Standard, Strict, Anonymous, Custom]
+    validations:
+      required: true
+  - type: input
+    id: site
+    attributes:
+      label: Site or page (if it is about one)
+      description: Try the shield button → "Shields for this site" — does turning it off fix it?
+  - type: input
+    id: os
+    attributes:
+      label: Windows version
+      placeholder: "Windows 11 23H2"
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else
+      description: Screenshots, steps to reproduce, logs. Please do not paste personal data.

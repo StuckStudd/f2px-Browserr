@@ -1,0 +1,26 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run test:unit
+      - run: npm run build
+      # The end-to-end suite drives real windows (npm run test:e2e); it needs a desktop session, so it is run locally.
+      - run: npx electron-builder --win --x64 --dir
+      - uses: actions/upload-artifact@v4
+        with:
+          name: F2PX-win-unpacked
+          path: release/win-unpacked
+          if-no-files-found: error
