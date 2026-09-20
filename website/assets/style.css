@@ -205,3 +205,79 @@ code.inline { padding: 2px 6px; border: 1px solid var(--line-2); font-family: va
 .list--plain li { font-size: 14px; color: var(--fg-mute); }
 @media (max-width: 980px) { .grid--3 { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 560px) { .grid--3 { grid-template-columns: 1fr; } .stat { flex-direction: column; align-items: flex-start; gap: 14px; } }
+
+/* ── v1.1: skip link, header extras, hero pills ─────────────────────── */
+.skip { position: absolute; left: 12px; top: -48px; z-index: 40; padding: 8px 14px; background: var(--fg-strong); color: var(--bg-0); font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; text-decoration: none; transition: top 0.15s; }
+.skip:focus { top: 8px; }
+.icon-link { display: inline-grid; place-items: center; width: 28px; height: 28px; color: var(--fg-mute); transition: color 0.15s; }
+.icon-link:hover { color: var(--fg-strong); }
+.top__nav a.is-current { color: var(--fg-strong); }
+.pills { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; max-width: 760px; margin: 30px 0 0; padding: 0; list-style: none; animation: rise 0.7s 0.17s var(--ease) both; }
+.pill { padding: 6px 12px; border: 1px solid var(--line-2); font-size: 11px; letter-spacing: 0.06em; color: var(--fg); background: rgba(255, 255, 255, 0.02); }
+.dl__alt--gh { display: inline-flex; align-items: center; gap: 8px; color: var(--fg-mute); border-bottom-color: transparent; }
+.dl__alt--gh:hover { border-bottom-color: var(--line-3); }
+
+/* ── levels table ───────────────────────────────────────────────────── */
+.table-wrap { overflow-x: auto; border: 1px solid var(--line-2); }
+.levels { width: 100%; min-width: 640px; border-collapse: collapse; font-size: 13.5px; }
+.levels th, .levels td { padding: 13px 16px; border-bottom: 1px solid var(--line); text-align: center; }
+.levels thead th { font-family: var(--font-mono); font-size: 11px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; color: var(--fg-strong); background: rgba(255, 255, 255, 0.03); }
+.levels thead th small { display: block; margin-top: 2px; font-size: 9.5px; letter-spacing: 0.1em; color: var(--fg-dim); }
+.levels tbody th { text-align: left; font-weight: 400; color: var(--fg); }
+.levels tbody tr:last-child th, .levels tbody tr:last-child td { border-bottom: 0; }
+.levels tbody tr:hover { background: rgba(255, 255, 255, 0.025); }
+.levels th:nth-child(2), .levels td:nth-child(2) { background: rgba(255, 255, 255, 0.025); }
+.levels .yes { color: #9fd6a4; font-weight: 600; }
+.levels .no { color: var(--fg-faint); }
+
+/* ── spotlight rows ─────────────────────────────────────────────────── */
+.sec--spot { padding-top: 96px; }
+.spot { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.4fr); align-items: center; gap: clamp(24px, 5vw, 64px); margin-bottom: 84px; }
+.spot--flip { grid-template-columns: minmax(0, 1.4fr) minmax(0, 0.9fr); }
+.spot--flip .spot__text { order: 2; }
+.spot__text .label { color: var(--fg-dim); }
+.spot__text h3 { margin: 14px 0 12px; font-size: clamp(22px, 3vw, 30px); font-weight: 300; letter-spacing: -0.01em; line-height: 1.2; color: var(--fg-strong); }
+.spot__text p { margin: 0 0 18px; font-size: 14.5px; color: var(--fg-mute); }
+.spot__list { margin: 0; padding: 0; list-style: none; }
+.spot__list li { position: relative; padding: 8px 0 8px 22px; border-top: 1px solid var(--line); font-size: 13.5px; color: var(--fg); }
+.spot__list li::before { content: ''; position: absolute; left: 2px; top: 17px; width: 7px; height: 7px; border: 1px solid var(--fg-mute); }
+.spot__shot { margin: 0; border: 1px solid var(--line-2); background: var(--bg-0); box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55); overflow: hidden; }
+.spot__shot img { display: block; width: 100%; height: auto; }
+
+/* ── gallery: shots that include the browser chrome need no fake frame ─ */
+.frame--bare .frame__tabs, .frame--bare .frame__bar { display: none; }
+.tabs { gap: 0; }
+.tabs button { margin-bottom: -1px; }
+
+/* ── open source cards ──────────────────────────────────────────────── */
+.cards { display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid var(--line); border-left: 1px solid var(--line); }
+.card { display: flex; flex-direction: column; gap: 8px; padding: 26px 24px 24px; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); text-decoration: none; transition: background 0.2s var(--ease); }
+.card:hover { background: rgba(255, 255, 255, 0.04); }
+.card h3 { margin: 0; font-size: 16px; font-weight: 500; color: var(--fg-strong); }
+.card p { flex: 1; margin: 0; font-size: 13.5px; color: var(--fg-mute); }
+.card__cta { margin-top: 14px; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--fg); }
+.box__text.mono { margin-top: 18px; font-size: 11.5px; color: var(--fg-dim); }
+
+/* ── footer links ───────────────────────────────────────────────────── */
+.foot__links { display: inline-flex; flex-wrap: wrap; gap: 20px; }
+.foot__links a { text-decoration: none; color: var(--fg-mute); transition: color 0.15s; }
+.foot__links a:hover { color: var(--fg-strong); }
+
+@media (max-width: 980px) {
+  .spot, .spot--flip { grid-template-columns: 1fr; gap: 24px; margin-bottom: 64px; }
+  .spot--flip .spot__text { order: 0; }
+  .cards { grid-template-columns: 1fr; }
+}
+@media (max-width: 560px) {
+  .pills { gap: 8px; }
+  .pill { font-size: 10.5px; }
+  .tabs button { flex: 1 1 auto; padding: 0 10px; }
+}
+.levels thead th:first-child { text-align: left; }
+@media (max-width: 560px) {
+  .levels { min-width: 0; table-layout: fixed; font-size: 12px; }
+  .levels th:first-child { width: 46%; }
+  .levels th, .levels td { padding: 10px 6px; }
+  .levels thead th { font-size: 9px; letter-spacing: 0.05em; }
+  .levels thead th small { font-size: 8px; letter-spacing: 0.02em; }
+}

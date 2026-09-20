@@ -27,11 +27,11 @@ Cloudflare Pages — 25 МБ, GitHub Pages — жёсткий предел 100 �
 
 ### Вариант A (рекомендуется): сайт на хостинге, файлы в GitHub Releases
 
-1. Создайте Release `v1.0.0` в репозитории и приложите к нему `release/F2PX-Browser-Setup.exe` и `release/F2PX-Browser.exe`.
+1. Создайте Release `v1.1.0` в репозитории и приложите к нему `release/F2PX-Browser-Setup.exe` и `release/F2PX-Browser.exe`.
 2. Подготовьте сайт со ссылками на Release (файлы при этом не копируются):
 
    ```bash
-   npm run site:prepare -- --base-url https://github.com/USER/REPO/releases/download/v1.0.0/
+   npm run site:prepare -- --base-url https://github.com/USER/REPO/releases/download/v1.1.0/
    ```
 
 3. Загрузите содержимое `website/` (без `downloads/`) на GitHub Pages / Netlify / Cloudflare Pages / любой хостинг.

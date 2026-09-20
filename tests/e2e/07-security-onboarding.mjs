@@ -166,9 +166,14 @@ try {
   await stop()
   await start(A)
   const lock2 = await internal('unlock')
-  await lock2.eval(clickText('.lock__link', 'Forgot'))
-  await sleep(400)
-  check('forgot-password screen warns that data cannot be recovered', /cannot be recovered/i.test(await lock2.eval('document.body.innerText')))
+  // the unlock window can still be hydrating on a busy machine: click until the warning shows
+  const lockText = await waitFor(async () => {
+    await lock2.eval(clickText('.lock__link', 'Forgot'))
+    await sleep(350)
+    const text = await lock2.eval('document.body.innerText')
+    return /cannot be recovered/i.test(text) ? text : null
+  }, 12000, 100)
+  check('forgot-password screen warns that data cannot be recovered', !!lockText, (lockText || '').replace(/\s+/g, ' ').slice(0, 120))
   await lock2.eval(`window.f2pxUnlock.reset()`)
   rpc = await shellReady()
   check('erase-and-start-fresh gives an empty profile', (await rpc('bookmarks.tree')).length === 0 && (await rpc('settings.get')).userName === '')

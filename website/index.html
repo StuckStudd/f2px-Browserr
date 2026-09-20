@@ -3,16 +3,36 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>F2PX Browser — скачать для Windows</title>
-    <meta name="description" content="F2PX Browser — быстрый браузер на Chromium для Windows 10/11 с приватностью по умолчанию: блокировка трекеров, только HTTPS, никакой телеметрии. Все данные только у вас." />
+    <title>F2PX Browser — приватный браузер для Windows: блокировка рекламы, защита от слежки, режим Tor</title>
+    <meta name="description" content="F2PX Browser — быстрый браузер на Chromium для Windows 10/11 с приватностью по умолчанию: блокировка рекламы и трекеров, защита от фингерпринтинга, режим Tor, кнопка Fire. Открытый код (MIT), никакой телеметрии." />
+    <meta name="keywords" content="приватный браузер, анонимный браузер, блокировка рекламы, защита от слежки, tor, фингерпринтинг, chromium, windows, private browser, anti-fingerprinting" />
     <meta name="theme-color" content="#050505" />
-    <meta property="og:title" content="F2PX Browser" />
-    <meta property="og:description" content="Your web. Your space. Браузер для Windows с приватностью по умолчанию." />
-    <meta property="og:image" content="assets/shots/home.png" />
+    <meta name="color-scheme" content="dark" />
     <link rel="icon" href="assets/icon-512.png" type="image/png" />
+    <link rel="apple-touch-icon" href="assets/icon-512.png" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="F2PX Browser" />
+    <meta property="og:title" content="F2PX Browser — Your web. Your space." />
+    <meta property="og:description" content="Приватный браузер для Windows: блокировка рекламы и трекеров, защита от фингерпринтинга, режим Tor, Fire. Открытый код." />
+    <meta property="og:image" content="https://raw.githubusercontent.com/StuckStudd/f2px-Browserr/main/website/assets/shots/privacy-center.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "F2PX Browser",
+        "applicationCategory": "BrowserApplication",
+        "operatingSystem": "Windows 10, Windows 11",
+        "description": "Privacy-first Chromium-based browser for Windows with ad and tracker blocking, fingerprint protection, Tor mode and Fire.",
+        "license": "https://opensource.org/licenses/MIT",
+        "url": "https://github.com/StuckStudd/f2px-Browserr",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+      }
+    </script>
     <link rel="stylesheet" href="assets/style.css" />
   </head>
   <body>
+    <a class="skip" href="#top" data-i18n="skip">К содержимому</a>
     <header class="top">
       <a class="brand" href="#top" aria-label="F2PX">
         <svg class="brand__mark" viewBox="0 0 256 256" aria-hidden="true">
@@ -24,12 +44,15 @@
       </a>
       <nav class="top__nav" aria-label="Разделы">
         <a href="#privacy" data-i18n="nav.privacy">Приватность</a>
+        <a href="#levels" data-i18n="nav.levels">Уровни</a>
         <a href="#features" data-i18n="nav.features">Возможности</a>
         <a href="#screens" data-i18n="nav.screens">Скриншоты</a>
         <a href="#install" data-i18n="nav.install">Установка</a>
+        <a href="#open" data-i18n="nav.open">Открытый код</a>
         <a href="#faq" data-i18n="nav.faq">FAQ</a>
       </nav>
       <div class="top__right">
+        <a class="icon-link" href="https://github.com/StuckStudd/f2px-Browserr" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M12 .5A11.5 11.5 0 0 0 .5 12c0 5.08 3.29 9.39 7.86 10.91.58.1.79-.25.79-.56v-2c-3.2.7-3.87-1.36-3.87-1.36-.52-1.33-1.28-1.68-1.28-1.68-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.19 1.76 1.19 1.03 1.76 2.69 1.25 3.35.96.1-.75.4-1.25.73-1.54-2.55-.29-5.24-1.28-5.24-5.68 0-1.25.45-2.28 1.19-3.08-.12-.29-.52-1.46.11-3.04 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.58.23 2.75.11 3.04.74.8 1.19 1.83 1.19 3.08 0 4.41-2.69 5.38-5.25 5.66.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 23.5 12 11.5 11.5 0 0 0 12 .5Z" /></svg></a>
         <div class="lang" role="group" aria-label="Language">
           <button type="button" data-lang="ru" aria-pressed="true">RU</button>
           <button type="button" data-lang="en" aria-pressed="false">EN</button>
@@ -56,18 +79,24 @@
         <div class="hero__label label">System / Download</div>
         <h1 class="hero__logo">F2PX</h1>
         <p class="hero__slogan">Your web. Your space.</p>
-        <p class="hero__lead" data-i18n="hero.lead">Быстрый браузер на движке Chromium, в котором конфиденциальность включена по умолчанию: блокировка трекеров, только HTTPS и никакой телеметрии.</p>
-
+        <p class="hero__lead" data-i18n="hero.lead">Быстрый браузер на движке Chromium, в котором приватность включена по умолчанию: блокировка рекламы и трекеров, защита от фингерпринтинга, режим Tor и ни одного запроса без вашего ведома.</p>
+        <ul class="pills">
+          <li class="pill mono"><span data-i18n="pill1">175 000+ правил блокировки</span></li>
+          <li class="pill mono"><span data-i18n="pill2">0 запросов в простое</span></li>
+          <li class="pill mono"><span data-i18n="pill3">Tor · Fire · 3 уровня</span></li>
+          <li class="pill mono"><span data-i18n="pill4">Открытый код · MIT</span></li>
+        </ul>
         <div class="dl" id="dl-card">
           <a class="btn btn--primary btn--big" id="dl-setup" href="downloads/F2PX-Browser-Setup.exe" download>
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"><path d="M12 4v11M7 11l5 5 5-5M5 20h14" /></svg>
             <span data-i18n="dl.setup">Скачать для Windows</span>
           </a>
-          <div class="dl__meta mono" id="dl-meta">v1.0.0 · Windows 10/11 · x64</div>
+          <div class="dl__meta mono" id="dl-meta">v1.1.0 · Windows 10/11 · x64</div>
           <a class="dl__alt" id="dl-portable" href="downloads/F2PX-Browser.exe" download>
             <span data-i18n="dl.portable">Portable-версия, без установки</span>
             <span class="mono" id="dl-portable-size"></span>
           </a>
+          <a class="dl__alt dl__alt--gh" href="https://github.com/StuckStudd/f2px-Browserr/releases" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M12 .5A11.5 11.5 0 0 0 .5 12c0 5.08 3.29 9.39 7.86 10.91.58.1.79-.25.79-.56v-2c-3.2.7-3.87-1.36-3.87-1.36-.52-1.33-1.28-1.68-1.28-1.68-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.19 1.76 1.19 1.03 1.76 2.69 1.25 3.35.96.1-.75.4-1.25.73-1.54-2.55-.29-5.24-1.28-5.24-5.68 0-1.25.45-2.28 1.19-3.08-.12-.29-.52-1.46.11-3.04 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.58.23 2.75.11 3.04.74.8 1.19 1.83 1.19 3.08 0 4.41-2.69 5.38-5.25 5.66.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 23.5 12 11.5 11.5 0 0 0 12 .5Z" /></svg> <span data-i18n="dl.all">Все версии и исходный код на GitHub</span></a>
           <p class="dl__notwin" id="notwin" hidden data-i18n="dl.notwin">F2PX пока доступен только для Windows 10/11.</p>
         </div>
         <p class="hero__warn" data-i18n-html="dl.warn">Установщик пока не подписан цифровым сертификатом, поэтому Windows может показать предупреждение SmartScreen. <a href="#install">Как продолжить</a>.</p>
@@ -79,20 +108,20 @@
           <span class="label">01 / <span data-i18n="nav.privacy">Приватность</span></span>
           <span class="sec__line"></span>
         </header>
-        <p class="sec__lead" data-i18n="pv.lead">Конфиденциальность в F2PX — не отдельная настройка, а поведение по умолчанию. Вот что это значит на практике.</p>
+        <p class="sec__lead" data-i18n="pv.lead">Приватность в F2PX — не настройка, которую нужно искать, а поведение по умолчанию. Вот что это значит на практике.</p>
         <div class="grid grid--3">
           <article class="cell"><span class="cell__n mono">01</span><h3 data-i18n="pv1.t">Ноль запросов без вас</h3><p data-i18n="pv1.d">В простое браузер ничего не отправляет в сеть: ни телеметрии, ни синхронизации. Обновление списка защиты и проверка новой версии — по вашему выбору и выключены, пока вы их не включите. Мы проверяем это автоматическим тестом с логирующим прокси.</p></article>
-          <article class="cell"><span class="cell__n mono">02</span><h3 data-i18n="pv2.t">Блокировка трекеров</h3><p data-i18n="pv2.d">Встроенный список известных рекламных и аналитических трекеров. Режимы «Стандарт» и «Строгий», счётчик заблокированного прямо в адресной строке.</p></article>
-          <article class="cell"><span class="cell__n mono">03</span><h3 data-i18n="pv3.t">Только HTTPS</h3><p data-i18n="pv3.d">Сайты открываются по защищённому соединению. Если у сайта его нет, вы увидите предупреждение, а не молчаливый незащищённый HTTP.</p></article>
+          <article class="cell"><span class="cell__n mono">02</span><h3 data-i18n="pv2.t">Блокировка рекламы и трекеров</h3><p data-i18n="pv2.d">Фильтр-списки EasyList, EasyPrivacy, uBlock Origin и RU AdList (около 175 тысяч правил) работают офлайн и скрывают пустые рекламные блоки. Счётчик — в адресной строке, а щит сайта отключает защиту для одного сайта, если он из-за неё не работает.</p></article>
+          <article class="cell"><span class="cell__n mono">03</span><h3 data-i18n="pv3.t">HTTPS и зашифрованный DNS</h3><p data-i18n="pv3.d">Сайты открываются по защищённому соединению, а их адреса запрашиваются через зашифрованный DNS (DoH). Если у сайта нет HTTPS, вы увидите предупреждение, а не молчаливый обычный HTTP.</p></article>
           <article class="cell"><span class="cell__n mono">04</span><h3 data-i18n="pv4.t">Без утечек</h3><p data-i18n="pv4.d">WebRTC не раскрывает адрес в локальной сети, проверка орфографии выключена (иначе словари качаются с серверов Google), подсказки поиска выключены, Do Not Track и GPC включены.</p></article>
-          <article class="cell"><span class="cell__n mono">05</span><h3 data-i18n="pv5.t">Данные только у вас</h3><p data-i18n="pv5.d">История, закладки, настройки и сессия лежат на вашем диске. Нет аккаунта, облака и синхронизации. Поиск по умолчанию — DuckDuckGo.</p></article>
+          <article class="cell"><span class="cell__n mono">05</span><h3 data-i18n="pv5.t">Данные зашифрованы на диске</h3><p data-i18n="pv5.d">История, закладки, настройки и сессия хранятся зашифрованными (AES-256). Ключ защищён Windows или вашим паролем на запуск. Нет аккаунта, облака и синхронизации. Поиск по умолчанию — DuckDuckGo.</p></article>
           <article class="cell"><span class="cell__n mono">06</span><h3 data-i18n="pv6.t">Стирается по вашему желанию</h3><p data-i18n="pv6.d">Приватные окна ничего не сохраняют. Дополнительно можно очищать cookies и историю при каждом закрытии браузера.</p></article>
           <article class="cell"><span class="cell__n mono">07</span><h3 data-i18n="pv7.t">Защита от фишинга и вредоносных сайтов</h3><p data-i18n="pv7.d">Встроенный офлайн-список около 387 тысяч опасных сайтов (URLhaus и Phishing.Database). Переход останавливается до загрузки страницы. Плюс предупреждения о «похожих» адресах вроде paypa1.com. Список можно обновлять раз в сутки — по желанию.</p></article>
           <article class="cell"><span class="cell__n mono">08</span><h3 data-i18n="pv8.t">Безопасные загрузки</h3><p data-i18n="pv8.d">Каждый файл получает метку «скачано из интернета», поэтому Windows SmartScreen и Defender проверяют его. Программы вида invoice.pdf.exe помечаются как замаскированные, а запуск исполняемых файлов требует подтверждения.</p></article>
           <article class="cell"><span class="cell__n mono">09</span><h3 data-i18n="pv9.t">Уведомления об обновлениях</h3><p data-i18n="pv9.d">По желанию браузер раз в сутки спрашивает, вышла ли новая версия, и показывает ссылку на страницу загрузки. Он ничего не скачивает и не запускает сам, поэтому взломанный сервер не сможет выполнить код на вашем компьютере.</p></article>
-          <article class="cell"><span class="cell__n mono">10</span><h3 data-i18n="pv10.t">Защита от фингерпринтинга</h3><p data-i18n="pv10.d">Canvas, audio и WebGL-отпечатки отличаются для каждого сайта и каждой сессии, поэтому трекеры не могут связать вас между сайтами.</p></article>
-          <article class="cell"><span class="cell__n mono">11</span><h3 data-i18n="pv11.t">Tor и прокси</h3><p data-i18n="pv11.d">Отдельное Tor-окно и режим Anonymous направляют весь трафик через Tor. Если Tor недоступен, ничего не отправляется напрямую.</p></article>
-          <article class="cell"><span class="cell__n mono">12</span><h3 data-i18n="pv12.t">Fire и уровни приватности</h3><p data-i18n="pv12.d">Ctrl+Shift+Del мгновенно стирает историю, cookies, кэш и разрешения — и выдаёт сайтам новую «личность».</p></article>
+          <article class="cell"><span class="cell__n mono">10</span><h3 data-i18n="pv10.t">Защита от фингерпринтинга</h3><p data-i18n="pv10.d">Canvas-, audio- и WebGL-отпечатки различаются для каждого сайта и каждой сессии, поэтому трекеры не могут связать вас между сайтами. Работает и в чужих iframe. В режиме Strict устройство, экран, часовой пояс и язык выглядят одинаково у всех.</p></article>
+          <article class="cell"><span class="cell__n mono">11</span><h3 data-i18n="pv11.t">Tor и прокси</h3><p data-i18n="pv11.d">Tor-окно (Ctrl+Shift+Alt+N) и уровень Anonymous направляют весь трафик через Tor: имена сайтов уходят прокси неразрешёнными, без DNS-утечки. Если Tor недоступен, ничего не отправляется напрямую.</p></article>
+          <article class="cell"><span class="cell__n mono">12</span><h3 data-i18n="pv12.t">Fire и уровни приватности</h3><p data-i18n="pv12.d">Ctrl+Shift+Del мгновенно закрывает окна и стирает историю, cookies, кэш и разрешения — и выдаёт сайтам новую «личность». Уровни Standard, Strict и Anonymous настраивают всё сразу.</p></article>
         </div>
 
         <div class="stat">
@@ -106,9 +135,9 @@
         <div class="box box--honest">
           <h3 class="label" data-i18n="pv.not.t">Чего F2PX не делает</h3>
           <ul class="list list--plain">
-            <li data-i18n="pv.not1">F2PX — не Tor и не VPN. Он не скрывает ваш IP-адрес и не делает вас анонимным: сайты и провайдер по-прежнему видят, откуда вы.</li>
-            <li data-i18n="pv.not2">Отпечаток браузера (fingerprint) у Chromium индивидуален, F2PX его не унифицирует. Для этого нужен Tor Browser.</li>
-            <li data-i18n="pv.not3">Список трекеров компактный и консервативный: он убирает самое частое, но не заменяет полноценный блокировщик вроде uBlock Origin.</li>
+            <li data-i18n="pv.not1">F2PX — не Tor Browser. Ваш IP-адрес скрывается только в режиме Tor (нужен Tor Browser или tor.exe — F2PX его не содержит) или через ваш прокси / VPN. Без этого сайты и провайдер видят, откуда вы.</li>
+            <li data-i18n="pv.not2">Защита от фингерпринтинга делает вас трудноотслеживаемым между сайтами, но не одним из тысяч одинаковых: шрифты, точная геометрия окна и поведение GPU всё равно немного отличаются.</li>
+            <li data-i18n="pv.not3">Фильтр-движок понимает основные правила EasyList и uBlock, но не скриптлеты и не переписывание ответов: например, пропуск рекламы на YouTube ему недоступен.</li>
             <li data-i18n="pv.not5">Зашифрованы данные самого F2PX. Кэш и localStorage сайтов хранит Chromium (cookies он защищает средствами Windows). Пароль на запуск нельзя восстановить: если вы его забыли, остаётся только стереть данные.</li>
             <li data-i18n="pv.not4">Режим «Chrome compatibility» (нужен для входа в Google) сообщает сайтам, что вы используете Chrome; его можно выключить в Settings → Privacy.</li>
             <li data-i18n="pv.not6">Менеджера паролей в F2PX нет намеренно: хранилище паролей в браузере — главная цель для вредоносных программ. Используйте отдельный менеджер (Bitwarden, KeePassXC).</li>
@@ -117,10 +146,121 @@
         </div>
       </section>
 
+      <!-- LEVELS -->
+      <section class="sec" id="levels">
+        <header class="sec__head">
+          <span class="label">02 / <span data-i18n="nav.levels">Уровни</span></span>
+          <span class="sec__line"></span>
+        </header>
+        <p class="sec__lead" data-i18n="lv.lead">Три готовых набора настроек. Выберите в мастере первого запуска или в Центре приватности (Ctrl+Shift+P); если вы что-то поменяете вручную, уровень станет «Custom».</p>
+        <div class="table-wrap">
+          <table class="levels">
+            <thead>
+              <tr><th scope="col"><span data-i18n="lv.feature">Что включено</span></th><th scope="col">Standard<small><span data-i18n="lv.default">по умолчанию</span></small></th><th scope="col">Strict</th><th scope="col">Anonymous<small>Tor</small></th></tr>
+            </thead>
+            <tbody>
+            <tr><th scope="row" data-i18n="lv.r1">Реклама и трекеры блокируются (фильтр-списки + встроенный список)</th><td><span class="yes" aria-label="yes">✓</span></td><td><span class="yes" aria-label="yes">✓</span></td><td><span class="yes" aria-label="yes">✓</span></td></tr>
+            <tr><th scope="row" data-i18n="lv.r2">Canvas-, audio- и WebGL-отпечатки обезврежены</th><td><span class="yes" aria-label="yes">✓</span></td><td><span class="yes" aria-label="yes">✓</span></td><td><span class="yes" aria-label="yes">✓</span></td></tr>
+            <tr><th scope="row" data-i18n="lv.r3">Только HTTPS, зашифрованный DNS, очистка ссылок от меток</th><td><span class="yes" aria-label="yes">✓</span></td><td><span class="yes" aria-label="yes">✓</span></td><td><span class="yes" aria-label="yes">✓</span></td></tr>
+            <tr><th scope="row" data-i18n="lv.r4">Сторонние cookies заблокированы</th><td><span class="no" aria-label="no">—</span></td><td><span class="yes" aria-label="yes">✓</span></td><td><span class="yes" aria-label="yes">✓</span></td></tr>
+            <tr><th scope="row" data-i18n="lv.r5">Межсайтовый Referer убран, WebRTC без прямых соединений</th><td><span class="no" aria-label="no">—</span></td><td><span class="yes" aria-label="yes">✓</span></td><td><span class="yes" aria-label="yes">✓</span></td></tr>
+            <tr><th scope="row" data-i18n="lv.r6">Одинаковые железо, экран, часовой пояс (UTC) и язык у всех пользователей</th><td><span class="no" aria-label="no">—</span></td><td><span class="yes" aria-label="yes">✓</span></td><td><span class="yes" aria-label="yes">✓</span></td></tr>
+            <tr><th scope="row" data-i18n="lv.r7">Сайты из интернета не могут обращаться к localhost и вашей сети</th><td><span class="no" aria-label="no">—</span></td><td><span class="yes" aria-label="yes">✓</span></td><td><span class="yes" aria-label="yes">✓</span></td></tr>
+            <tr><th scope="row" data-i18n="lv.r8">Весь трафик через Tor (без прямого соединения)</th><td><span class="no" aria-label="no">—</span></td><td><span class="no" aria-label="no">—</span></td><td><span class="yes" aria-label="yes">✓</span></td></tr>
+            <tr><th scope="row" data-i18n="lv.r9">Cookies и история стираются при выходе</th><td><span class="no" aria-label="no">—</span></td><td><span class="no" aria-label="no">—</span></td><td><span class="yes" aria-label="yes">✓</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- SPOTLIGHT -->
+      <section class="sec sec--spot" id="spot" aria-label="Highlights">
+
+        <article class="spot">
+          <div class="spot__text">
+            <span class="label">01</span>
+            <h3 data-i18n="sp1.t">Щит сайта: видно, что происходит</h3>
+            <p data-i18n="sp1.d">Значок щита в адресной строке показывает, сколько рекламы, трекеров, попыток снять отпечаток и сторонних cookies остановлено на этой странице. Один переключатель отключает защиту для сайта, если он из-за неё не работает.</p>
+            <ul class="spot__list">
+              <li data-i18n="sp1.b1">Счётчики для каждой страницы</li>
+              <li data-i18n="sp1.b2">Исключения для отдельных сайтов</li>
+              <li data-i18n="sp1.b3">Очистка данных сайта в одно нажатие</li>
+            </ul>
+          </div>
+          <figure class="spot__shot">
+            <img src="assets/shots/shield.png" width="960" height="750" alt="Щит сайта: что заблокировано на странице" data-alt="alt.shield" loading="lazy" />
+          </figure>
+        </article>
+
+        <article class="spot spot--flip">
+          <div class="spot__text">
+            <span class="label">02</span>
+            <h3 data-i18n="sp2.t">Три уровня вместо сотни переключателей</h3>
+            <p data-i18n="sp2.d">Standard подходит всем и почти ничего не ломает. Strict блокирует сторонние cookies и делает ваше устройство неотличимым от остальных пользователей F2PX. Anonymous направляет весь трафик через Tor.</p>
+            <ul class="spot__list">
+              <li data-i18n="sp2.b1">Центр приватности: живые счётчики и все настройки на одной странице</li>
+              <li data-i18n="sp2.b2">Фильтр-списки, cookies, Referer, WebRTC, Tor</li>
+              <li data-i18n="sp2.b3">Честно сказано, чего защита не делает</li>
+            </ul>
+          </div>
+          <figure class="spot__shot">
+            <img src="assets/shots/privacy-center.png" width="1920" height="1140" alt="Центр приватности F2PX: уровни Standard, Strict и Anonymous" data-alt="alt.privacy-center" loading="lazy" />
+          </figure>
+        </article>
+
+        <article class="spot">
+          <div class="spot__text">
+            <span class="label">03</span>
+            <h3 data-i18n="sp3.t">Tor и прокси без утечек</h3>
+            <p data-i18n="sp3.d">Tor-окно работает через Tor, даже если остальной браузер подключён напрямую. Имена сайтов передаются прокси без локального разрешения, WebRTC не может обойти маршрут, а если Tor недоступен — вы увидите ошибку, а не незащищённое соединение.</p>
+            <ul class="spot__list">
+              <li data-i18n="sp3.b1">System, Direct, свой прокси или Tor</li>
+              <li data-i18n="sp3.b2">Находит запущенный Tor Browser или запускает ваш tor.exe</li>
+              <li data-i18n="sp3.b3">Запросы самого браузера идут тем же маршрутом</li>
+            </ul>
+          </div>
+          <figure class="spot__shot">
+            <img src="assets/shots/privacy-connection.png" width="1920" height="1140" alt="Центр приватности: подключение через Tor или прокси" data-alt="alt.privacy-connection" loading="lazy" />
+          </figure>
+        </article>
+
+        <article class="spot spot--flip">
+          <div class="spot__text">
+            <span class="label">04</span>
+            <h3 data-i18n="sp4.t">Fire: стереть всё одним действием</h3>
+            <p data-i18n="sp4.d">Ctrl+Shift+Del закрывает окна и стирает историю, сессию, cookies, кэш, список загрузок и разрешения — в обычных, приватных и Tor-окнах. Каждый сайт получает новую «личность», поэтому вас не свяжут с прошлым визитом.</p>
+            <ul class="spot__list">
+              <li data-i18n="sp4.b1">Вы выбираете, что именно стереть</li>
+              <li data-i18n="sp4.b2">Работает из любого окна</li>
+              <li data-i18n="sp4.b3">Новая личность для защиты от фингерпринтинга</li>
+            </ul>
+          </div>
+          <figure class="spot__shot">
+            <img src="assets/shots/fire.png" width="960" height="810" alt="Fire: стереть всё одним действием" data-alt="alt.fire" loading="lazy" />
+          </figure>
+        </article>
+
+        <article class="spot">
+          <div class="spot__text">
+            <span class="label">05</span>
+            <h3 data-i18n="sp5.t">Командная палитра</h3>
+            <p data-i18n="sp5.d">Ctrl+Shift+K: команды, открытые вкладки, закладки и история в одном поле. Переключить уровень приватности, выключить щит, открыть Tor-окно — не отрываясь от клавиатуры. Поиск по вкладкам — Ctrl+Shift+A.</p>
+            <ul class="spot__list">
+              <li data-i18n="sp5.b1">Нечёткий поиск по командам</li>
+              <li data-i18n="sp5.b2">Вкладки, закладки и история</li>
+              <li data-i18n="sp5.b3">Сохранение в PDF и снимок экрана</li>
+            </ul>
+          </div>
+          <figure class="spot__shot">
+            <img src="assets/shots/palette.png" width="1140" height="1050" alt="Командная палитра F2PX" data-alt="alt.palette" loading="lazy" />
+          </figure>
+        </article>
+      </section>
+
       <!-- FEATURES -->
       <section class="sec" id="features">
         <header class="sec__head">
-          <span class="label">02 / <span data-i18n="nav.features">Возможности</span></span>
+          <span class="label">03 / <span data-i18n="nav.features">Возможности</span></span>
           <span class="sec__line"></span>
         </header>
         <div class="grid">
@@ -132,28 +272,32 @@
           <article class="cell"><span class="cell__n mono">06</span><h3 data-i18n="f6.t">Закладки и история</h3><p data-i18n="f6.d">Папки, поиск, перетаскивание. Импорт и экспорт закладок из Chrome, Edge и Firefox.</p></article>
           <article class="cell"><span class="cell__n mono">07</span><h3 data-i18n="f7.t">Горячие клавиши</h3><p data-i18n="f7.d">Ctrl+T, Ctrl+L, Ctrl+D, Ctrl+J, Ctrl+Shift+T — всё, к чему вы привыкли.</p></article>
           <article class="cell"><span class="cell__n mono">08</span><h3 data-i18n="f8.t">Только локально</h3><p data-i18n="f8.d">Без аккаунта, синхронизации и телеметрии. История и настройки лежат на вашем диске.</p></article>
+          <article class="cell"><span class="cell__n mono">09</span><h3 data-i18n="f9.t">Командная палитра</h3><p data-i18n="f9.d">Ctrl+Shift+K — команды, вкладки, закладки и история в одном поле. Ctrl+Shift+A — поиск по вкладкам.</p></article>
+          <article class="cell"><span class="cell__n mono">10</span><h3 data-i18n="f10.t">Поиск без слежки</h3><p data-i18n="f10.d">DuckDuckGo по умолчанию; Brave Search, Startpage, Qwant и Mojeek под рукой. Подсказки поиска выключены.</p></article>
+          <article class="cell"><span class="cell__n mono">11</span><h3 data-i18n="f11.t">PDF и снимки экрана</h3><p data-i18n="f11.d">Сохраните страницу как PDF или сделайте снимок — из меню или палитры.</p></article>
+          <article class="cell"><span class="cell__n mono">12</span><h3 data-i18n="f12.t">Встроен в Windows</h3><p data-i18n="f12.d">Кнопки окна с Snap Layouts, трей, автозапуск, тёмная / светлая / системная тема.</p></article>
         </div>
       </section>
 
       <!-- SCREENSHOTS -->
       <section class="sec" id="screens">
         <header class="sec__head">
-          <span class="label">03 / <span data-i18n="nav.screens">Скриншоты</span></span>
+          <span class="label">04 / <span data-i18n="nav.screens">Скриншоты</span></span>
           <span class="sec__line"></span>
         </header>
         <div class="tabs" role="tablist" aria-label="Screenshots">
           <button type="button" role="tab" data-shot="home" aria-selected="true" data-i18n="s.home">Старт</button>
-          <button type="button" role="tab" data-shot="setup" aria-selected="false" data-i18n="s.setup">Мастер</button>
-          <button type="button" role="tab" data-shot="downloads" aria-selected="false" data-i18n="s.downloads">Загрузки</button>
-          <button type="button" role="tab" data-shot="bookmarks" aria-selected="false" data-i18n="s.bookmarks">Закладки</button>
           <button type="button" role="tab" data-shot="privacy-center" aria-selected="false" data-i18n="s.privacycenter">Центр приватности</button>
           <button type="button" role="tab" data-shot="shield" aria-selected="false" data-i18n="s.shield">Щит</button>
           <button type="button" role="tab" data-shot="fire" aria-selected="false" data-i18n="s.fire">Fire</button>
           <button type="button" role="tab" data-shot="palette" aria-selected="false" data-i18n="s.palette">Палитра</button>
-          <button type="button" role="tab" data-shot="privacy" aria-selected="false" data-i18n="s.privacy">Приватность</button>
+          <button type="button" role="tab" data-shot="levels" aria-selected="false" data-i18n="s.levels">Мастер</button>
+          <button type="button" role="tab" data-shot="privacy-connection" aria-selected="false" data-i18n="s.connection">Tor / прокси</button>
+          <button type="button" role="tab" data-shot="downloads" aria-selected="false" data-i18n="s.downloads">Загрузки</button>
+          <button type="button" role="tab" data-shot="bookmarks" aria-selected="false" data-i18n="s.bookmarks">Закладки</button>
           <button type="button" role="tab" data-shot="settings" aria-selected="false" data-i18n="s.settings">Настройки</button>
         </div>
-        <div class="frame">
+        <div class="frame" id="frame">
           <div class="frame__tabs">
             <span class="frame__tab"><i></i><b id="frame-title">New tab</b><em>×</em></span>
             <span class="frame__plus">+</span>
@@ -169,13 +313,13 @@
       <!-- INSTALL -->
       <section class="sec" id="install">
         <header class="sec__head">
-          <span class="label">04 / <span data-i18n="nav.install">Установка</span></span>
+          <span class="label">05 / <span data-i18n="nav.install">Установка</span></span>
           <span class="sec__line"></span>
         </header>
         <ol class="steps">
           <li><span class="mono">01</span><div><h3 data-i18n="i1.t">Скачайте установщик</h3><p data-i18n="i1.d">Кнопка «Скачать для Windows» вверху страницы. Файл F2PX-Browser-Setup.exe.</p></div></li>
           <li><span class="mono">02</span><div><h3 data-i18n="i2.t">Запустите его</h3><p data-i18n-html="i2.d">Если Windows покажет «Система Windows защитила ваш компьютер», нажмите <b>Подробнее</b>, затем <b>Выполнить в любом случае</b>. Это нормально для приложений без платной подписи.</p></div></li>
-          <li><span class="mono">03</span><div><h3 data-i18n="i3.t">Готово</h3><p data-i18n="i3.d">F2PX Browser появится в меню «Пуск» и на рабочем столе. Установка не требует прав администратора.</p></div></li>
+          <li><span class="mono">03</span><div><h3 data-i18n="i3.t">Готово</h3><p data-i18n="i3.d">F2PX Browser появится в меню «Пуск» и на рабочем столе. Установка не требует прав администратора. При первом запуске мастер предложит профиль (и пароль по желанию), тему, поисковик (рекомендуем DuckDuckGo) и уровень приватности.</p></div></li>
         </ol>
 
         <div class="cols">
@@ -185,7 +329,7 @@
               <li><span>OS</span><span>Windows 10 / 11, 64-bit</span></li>
               <li><span data-i18n="req.disk">Диск</span><span>~350 MB</span></li>
               <li><span>RAM</span><span data-i18n="req.ram">от 4 GB</span></li>
-              <li><span data-i18n="req.eng">Движок</span><span>Chromium 152</span></li>
+              <li><span data-i18n="req.eng">Движок</span><span>Chromium <span id="chromium-version">152</span></span></li>
             </ul>
           </div>
           <div class="box" id="verify">
@@ -206,22 +350,42 @@
         </div>
       </section>
 
+      <!-- OPEN SOURCE -->
+      <section class="sec" id="open">
+        <header class="sec__head">
+          <span class="label">06 / <span data-i18n="nav.open">Открытый код</span></span>
+          <span class="sec__line"></span>
+        </header>
+        <p class="sec__lead" data-i18n="os.lead">F2PX написан открыто. Читайте код, собирайте сами, проверяйте тесты — вся защита описана в README и покрыта автоматическими проверками.</p>
+        <div class="cards">
+          <a class="card" href="https://github.com/StuckStudd/f2px-Browserr" target="_blank" rel="noopener"><h3 data-i18n="os1.t">Исходный код</h3><p data-i18n="os1.d">Лицензия MIT. Electron, TypeScript, React. 152 юнит-теста и 300 сквозных проверок реального приложения.</p><span class="card__cta mono"><span data-i18n="os.cta">Открыть →</span></span></a>
+          <a class="card" href="https://github.com/StuckStudd/f2px-Browserr/releases" target="_blank" rel="noopener"><h3 data-i18n="os2.t">Релизы</h3><p data-i18n="os2.d">Установщик и portable-версия с контрольными суммами и списком изменений.</p><span class="card__cta mono"><span data-i18n="os.cta">Открыть →</span></span></a>
+          <a class="card" href="https://github.com/StuckStudd/f2px-Browserr/security/advisories/new" target="_blank" rel="noopener"><h3 data-i18n="os3.t">Нашли уязвимость?</h3><p data-i18n="os3.d">Сообщите приватно через GitHub Security Advisories — публичный issue не нужен.</p><span class="card__cta mono"><span data-i18n="os.cta">Открыть →</span></span></a>
+        </div>
+        <p class="box__text mono" data-i18n="os.tests">Проверка «ноль запросов»: tests/e2e/06-no-background-traffic.mjs</p>
+      </section>
+
       <!-- FAQ -->
       <section class="sec" id="faq">
         <header class="sec__head">
-          <span class="label">05 / FAQ</span>
+          <span class="label">07 / <span data-i18n="nav.faq">FAQ</span></span>
           <span class="sec__line"></span>
         </header>
         <div class="faq">
-          <details><summary data-i18n="q1.q">Почему Windows показывает предупреждение при запуске?</summary><p data-i18n="q1.a">Установщик пока не подписан платным сертификатом разработчика, поэтому SmartScreen не знает его издателя. Скачивайте файл только с этого сайта и сверяйте SHA-256 из раздела «Установка».</p></details>
-          <details><summary data-i18n="q2.q">Работает ли вход в Gmail / аккаунт Google?</summary><p data-i18n="q2.a">Google блокирует вход во встроенных браузерах, поэтому в F2PX есть режим «Chrome compatibility» (Настройки → Privacy, включён по умолчанию). Он помогает, но это мера совместимости без гарантий — Google может изменить проверки.</p></details>
-          <details><summary data-i18n="q3.q">Будут ли работать Netflix, Spotify и другой защищённый контент?</summary><p data-i18n="q3.a">Нет: защита контента Widevine (DRM) в F2PX недоступна. Обычные сайты, видео и музыка без DRM работают.</p></details>
-          <details><summary data-i18n="q4.q">Поддерживаются ли расширения Chrome?</summary><p data-i18n="q4.a">Пока нет.</p></details>
-          <details><summary data-i18n="q5.q">Где хранятся мои данные и как всё удалить?</summary><p data-i18n="q5.a">В папке %APPDATA%\F2PX Browser. Удалите программу через «Параметры → Приложения» — данные при этом остаются; чтобы стереть их полностью, удалите эту папку.</p></details>
-          <details><summary data-i18n="q7.q">F2PX — это анонимный браузер вроде Tor?</summary><p data-i18n="q7.a">Нет. F2PX защищает от слежки: блокирует трекеры, не шлёт данные разработчикам и не хранит ничего в облаке. Но он не скрывает ваш IP-адрес и не маскирует отпечаток браузера. Если вам нужна настоящая анонимность, используйте Tor Browser.</p></details>
+          <details><summary data-i18n="q7.q">F2PX — это анонимный браузер вроде Tor Browser?</summary><p data-i18n="q7.a">Не совсем. Ваш IP-адрес скрывается только в режиме Tor (уровень Anonymous или Tor-окно): для этого нужен Tor Browser или tor.exe — F2PX его не содержит. Защита от фингерпринтинга делает вас трудноотслеживаемым между сайтами, но браузер не станет неотличимым от других пользователей Tor. Для максимальной анонимности используйте Tor Browser.</p></details>
           <details><summary data-i18n="q8.q">Как проверить, что браузер ничего не отправляет сам?</summary><p data-i18n="q8.a">Запустите его за любым логирующим прокси или в Wireshark: в простое трафика нет. В исходниках проекта есть автоматический тест tests/e2e/06-no-background-traffic.mjs, который делает ровно это.</p></details>
+          <details><summary data-i18n="q11.q">Что нужно для режима Tor?</summary><p data-i18n="q11.a">Запустите Tor Browser — F2PX найдёт его на 127.0.0.1:9150 — или скачайте Tor Expert Bundle и укажите tor.exe в Центре приватности: F2PX сам запустит и остановит его. Пока Tor недоступен, страницы в этом режиме не открываются: так и задумано, чтобы ничего не ушло напрямую.</p></details>
+          <details><summary data-i18n="q12.q">Сайт не работает или просит капчу в режиме Strict. Что делать?</summary><p data-i18n="q12.a">Такое бывает: сторонние cookies нужны кнопкам входа и платёжным формам, а одинаковый «отпечаток» иногда вызывает проверку на бота. Нажмите значок щита в адресной строке и отключите защиту или разрешите сторонние cookies для этого сайта.</p></details>
+          <details><summary data-i18n="q13.q">Блокирует ли F2PX рекламу на YouTube?</summary><p data-i18n="q13.a">Он блокирует рекламу и трекеры по спискам EasyList, uBlock и RU AdList, но не умеет пропускать рекламные ролики YouTube: для этого нужны скриптлеты, которых во встроенном движке нет.</p></details>
+          <details><summary data-i18n="q1.q">Почему Windows показывает предупреждение при запуске?</summary><p data-i18n="q1.a">Установщик пока не подписан платным сертификатом разработчика, поэтому SmartScreen не знает его издателя. Скачивайте файл только с этого сайта и сверяйте SHA-256 из раздела «Установка».</p></details>
+          <details><summary data-i18n="q2.q">Работает ли вход в Gmail / аккаунт Google?</summary><p data-i18n="q2.a">Google блокирует вход во встроенных браузерах, поэтому в F2PX есть режим «Chrome compatibility» (Настройки → Privacy, включён по умолчанию). Он помогает, но это мера совместимости без гарантий — Google может изменить проверки. Для самой нейтральной идентичности режим можно выключить.</p></details>
+          <details><summary data-i18n="q3.q">Будут ли работать Netflix, Spotify и другой защищённый контент?</summary><p data-i18n="q3.a">Нет: защита контента Widevine (DRM) в F2PX недоступна. Обычные сайты, видео и музыка без DRM работают.</p></details>
+          <details><summary data-i18n="q4.q">Поддерживаются ли расширения Chrome?</summary><p data-i18n="q4.a">Нет. Зато блокировка рекламы и трекеров уже встроена.</p></details>
+          <details><summary data-i18n="q5.q">Где хранятся мои данные и как всё удалить?</summary><p data-i18n="q5.a">В папке %APPDATA%\F2PX Browser. Удалите программу через «Параметры → Приложения» — данные при этом остаются; чтобы стереть их полностью, удалите эту папку.</p></details>
           <details><summary data-i18n="q9.q">Что именно шифруется?</summary><p data-i18n="q9.a">История, закладки, настройки, список загрузок и сохранённая сессия хранятся на диске зашифрованными (AES-256-GCM). Ключ защищён вашей учётной записью Windows (DPAPI) или, если вы задали, паролем на запуск. Адреса сайтов запрашиваются через зашифрованный DNS (DoH), а сами сайты открываются по HTTPS.</p></details>
           <details><summary data-i18n="q10.q">Что будет, если я забуду пароль на запуск?</summary><p data-i18n="q10.a">Восстановить данные нельзя — в этом смысл шифрования. На окне ввода пароля есть «Forgot password?»: он стирает все данные F2PX и начинает с чистого профиля. Пароль необязателен: без него данные всё равно зашифрованы ключом вашей учётной записи Windows.</p></details>
+          <details><summary data-i18n="q14.q">Открыт ли код? Под какой лицензией?</summary><p data-i18n="q14.a">Да, код открыт на GitHub под лицензией MIT. Фильтр-списки и список опасных сайтов — сторонние данные под своими лицензиями (см. THIRD_PARTY_NOTICES.md).</p></details>
+          <details><summary data-i18n="q15.q">Как обновляться?</summary><p data-i18n="q15.a">F2PX не обновляется сам. Если включить проверку, он лишь покажет ссылку на новую версию — установщик вы скачаете здесь и сверите его SHA-256. Так взломанный сервер обновлений не сможет выполнить код на вашем компьютере.</p></details>
           <details><summary data-i18n="q6.q">Есть ли версии для macOS и Linux?</summary><p data-i18n="q6.a">Пока только Windows 10/11 (x64).</p></details>
         </div>
       </section>
@@ -229,8 +393,14 @@
 
     <footer class="foot">
       <div class="foot__row mono">
-        <span>F2PX BROWSER <span id="foot-version">v1.0.0</span></span>
-        <span data-i18n="foot.note">Chromium · Electron · Windows 10/11</span>
+        <span>F2PX BROWSER <span id="foot-version">v1.1.0</span></span>
+        <span class="foot__links">
+          <a href="https://github.com/StuckStudd/f2px-Browserr" target="_blank" rel="noopener"><span data-i18n="foot.src">Исходный код</span></a>
+          <a href="https://github.com/StuckStudd/f2px-Browserr/releases" target="_blank" rel="noopener"><span data-i18n="foot.rel">Релизы</span></a>
+          <a href="https://github.com/StuckStudd/f2px-Browserr/blob/main/CHANGELOG.md" target="_blank" rel="noopener"><span data-i18n="foot.log">Изменения</span></a>
+          <a href="https://github.com/StuckStudd/f2px-Browserr/blob/main/SECURITY.md" target="_blank" rel="noopener"><span data-i18n="foot.sec">Безопасность</span></a>
+        </span>
+        <span data-i18n="foot.note">Chromium · Electron · Windows 10/11 · MIT</span>
       </div>
     </footer>
 
