@@ -1,11 +1,4 @@
-F2PX Browser
-Minimalist futuristic browser for Windows 10/11 built on Electron + Chromium, React, and TypeScript.
-
-Dark monochrome interface, thin lines, monospace typography, plenty of whitespace.
-
-This is a real browser: tabs are individual WebContentsView instances with real Chromium, downloads run through the Chromium network stack, and history/bookmarks/settings are stored locally (SQLite + JSON) and persist across restarts.
-
-Вот исправленный вариант файла README.md. Непонятные знаки в самом конце текста были битой кодировкой (попытка записать заголовок # f2px-Browserr в UTF-16 вместо UTF-8) — этот фрагмент полностью удалён.Ниже представлен переведённый и оформленный документ:F2PX BrowserMinimalist futuristic browser for Windows 10/11 built on Electron + Chromium, React, and TypeScript.Dark monochrome interface, thin lines, monospace typography, plenty of whitespace.This is a real browser: tabs are individual WebContentsView instances with real Chromium, downloads run through the Chromium network stack, and history/bookmarks/settings are stored locally (SQLite + JSON) and persist across restarts.F2PX
+:F2PX BrowserMinimalist futuristic browser for Windows 10/11 built on Electron + Chromium, React, and TypeScript.Dark monochrome interface, thin lines, monospace typography, plenty of whitespace.This is a real browser: tabs are individual WebContentsView instances with real Chromium, downloads run through the Chromium network stack, and history/bookmarks/settings are stored locally (SQLite + JSON) and persist across restarts.F2PX
 YOUR WEB. YOUR SPACE.
 Quick StartBashnpm install        # dependencies (no native modules — SQLite is built into Node inside Electron)
 npm run dev        # development mode with HMR
