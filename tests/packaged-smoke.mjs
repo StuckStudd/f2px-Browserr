@@ -1,0 +1,80 @@
+// Smoke test of the *packaged* app.
+//   node tests/packaged-smoke.mjs [path-to-F2PX Browser.exe]   (default: release/win-unpacked)
+import fs from 'node:fs'
+import path from 'node:path'
+import { launchExe, shellConn, waitFor, check, checkNet, summary, sleep, startServer, targets, connect, browserClose, killAll, TMP, PROJECT } from './helpers/harness.mjs'
+const exe = process.argv[2] || path.join(PROJECT, 'release', 'win-unpacked', 'F2PX Browser.exe')
+const PORT = 9350
+const userData = path.join(TMP, 'ud-packaged')
+fs.rmSync(userData, { recursive: true, force: true })
+const server = await startServer()
+let app = launchExe(exe, userData, PORT)
+let shell
+try {
+  shell = await waitFor(async () => shellConn(), 25000, 500)
+  const rpc = (m, ...a) => shell.eval(`window.f2pxShell.rpc(${JSON.stringify(m)}, ...${JSON.stringify(a)})`)
+  const state = () => rpc('shell.state')
+  const activeTab = async () => { const s = await state(); return s.tabs.find((t) => t.id === s.activeId) }
+  let s = await waitFor(async () => { const x = await state(); return x.tabs.length ? x : null })
+  check('packaged app starts and shows the start page', s?.tabs[0]?.url.startsWith('f2px://home'), s?.tabs[0]?.url)
+  const home = (await targets()).find((t) => t.url.startsWith('f2px://home'))
+  const hc = await connect(home)
+  await sleep(1200)
+  const text = await hc.eval('document.body.innerText')
+  check('start page renders from the asar bundle (logo + quick access)', /F2PX/.test(text) && /QUICK ACCESS/i.test(text) && /YouTube/i.test(text))
+  const fonts = await hc.eval(`document.fonts.check('16px "IBM Plex Mono"') && document.fonts.check('16px "Inter Variable"')`)
+  check('bundled fonts load (no CDN)', fonts === true)
+  const csp = await hc.eval(`document.querySelector('meta[http-equiv="Content-Security-Policy"]')?.content || ''`)
+  check('strict CSP present in production bundle', /default-src 'self'/.test(csp) && !/unsafe-eval/.test(csp))
+  const threats = await hc.eval(`window.f2px.rpc('threats.status')`)
+  check('packaged app ships the phishing/malware list', threats.entries > 50000 && threats.source === 'bundled', JSON.stringify(threats))
+  const upd = await hc.eval(`window.f2px.rpc('update.status')`)
+  check('update checks are unconfigured until a feed is set in package.json', upd.state === 'unconfigured', JSON.stringify(upd))
+  const apiKeys = await hc.eval(`Object.keys(window).filter(k => k === 'require' || k === 'process' || k === 'Buffer' || k === 'electron').join(',')`)
+  check('no Node globals leak into the page (sandbox)', apiKeys === '', apiKeys)
+  hc.close()
+
+  await rpc('nav.go', 'http://127.0.0.1:8899/')
+  const t = await waitFor(async () => { const x = await activeTab(); return x.title === 'Local Test Page' && !x.loading ? x : null })
+  check('navigation works in the packaged build', !!t)
+  await rpc('nav.go', 'https://example.com/')
+  const ex = await waitFor(async () => { const x = await activeTab(); return /Example Domain/.test(x.title) && !x.loading ? x : null }, 25000)
+  checkNet('real HTTPS website loads (example.com)', !!ex, ex?.title)
+  checkNet('HTTPS pages are marked secure', ex?.security === 'secure')
+
+  await rpc('nav.go', 'http://127.0.0.1:8899/small.bin')
+  const dl = await waitFor(async () => (await rpc('downloads.list')).find((d) => d.filename.startsWith('f2px-small') && d.state === 'completed'), 20000)
+  check('download works in the packaged build', !!dl && fs.existsSync(dl.savePath), dl?.savePath)
+  if (dl) fs.rmSync(dl.savePath, { force: true })
+
+  await rpc('settings.update', { theme: 'light', compactMode: true })
+  await sleep(600)
+  shell.close()
+  await browserClose(PORT)
+  await sleep(2000)
+  killAll()
+  check('encrypted vault created in the profile', fs.existsSync(path.join(userData, 'f2px.vault')) && fs.existsSync(path.join(userData, 'vault.json')))
+
+  app = launchExe(exe, userData, PORT)
+  shell = await waitFor(async () => shellConn(), 25000, 500)
+  const rpc2 = (m, ...a) => shell.eval(`window.f2pxShell.rpc(${JSON.stringify(m)}, ...${JSON.stringify(a)})`)
+  const st = await rpc2('settings.get')
+  check('settings persisted across restarts', st.theme === 'light' && st.compactMode === true)
+  await rpc2('ui.openPage', 'history')
+  const ht = await waitFor(async () => (await targets()).find((x) => x.url.startsWith('f2px://history')))
+  const c = await connect(ht)
+  await sleep(700)
+  const hist = await c.eval(`window.f2px.rpc('history.list', {})`)
+  check('history persisted across restarts', hist.some((e) => e.url === 'http://127.0.0.1:8899/'), hist.length + ' entries')
+  c.close()
+} catch (e) {
+  check('unexpected error', false, e.stack)
+} finally {
+  summary()
+  console.log('\n--- app log ---\n' + app.log().split('\n').slice(-12).join('\n'))
+  try { shell?.close() } catch {}
+  await browserClose(PORT).catch(() => {})
+  server.close()
+  killAll()
+  process.exit(process.exitCode || 0)
+}

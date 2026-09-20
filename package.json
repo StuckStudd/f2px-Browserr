@@ -1,0 +1,46 @@
+{
+  "name": "f2px-browser",
+  "productName": "F2PX Browser",
+  "version": "1.0.0",
+  "description": "F2PX Browser — minimal futuristic web browser for Windows",
+  "author": "F2PX",
+  "license": "MIT",
+  "f2px": {
+    "updateFeed": ""
+  },
+  "private": true,
+  "main": "./out/main/index.js",
+  "scripts": {
+    "dev": "node scripts/run.cjs electron-vite dev",
+    "build": "npm run typecheck && node scripts/run.cjs electron-vite build",
+    "start": "node scripts/run.cjs electron-vite preview",
+    "typecheck": "tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json",
+    "icons": "node scripts/run.cjs electron scripts/generate-icons.cjs",
+    "dist": "npm run build && electron-builder --win --x64",
+    "dist:dir": "npm run build && electron-builder --win --x64 --dir",
+    "test:unit": "node tests/unit.mjs",
+    "test:e2e": "node tests/e2e/run.mjs",
+    "test": "npm run typecheck && npm run test:unit",
+    "test:packaged": "node tests/packaged-smoke.mjs",
+    "site:shots": "node scripts/capture-site-screenshots.mjs",
+    "site:prepare": "node scripts/prepare-site.cjs",
+    "site:serve": "node scripts/serve-site.cjs",
+    "test:site": "node tests/site-smoke.mjs"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@fontsource-variable/inter": "^5.3.0",
+    "@fontsource/ibm-plex-mono": "^5.3.0",
+    "@types/node": "^24.0.0",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "@vitejs/plugin-react": "^5.2.0",
+    "electron": "^44.4.3",
+    "electron-builder": "^26.15.3",
+    "electron-vite": "^5.0.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "typescript": "~5.9.3",
+    "vite": "^7.3.6"
+  }
+}

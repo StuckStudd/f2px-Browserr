@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>F2PX Browser — скачать для Windows</title>
+    <meta name="description" content="F2PX Browser — быстрый браузер на Chromium для Windows 10/11 с приватностью по умолчанию: блокировка трекеров, только HTTPS, никакой телеметрии. Все данные только у вас." />
+    <meta name="theme-color" content="#050505" />
+    <meta property="og:title" content="F2PX Browser" />
+    <meta property="og:description" content="Your web. Your space. Браузер для Windows с приватностью по умолчанию." />
+    <meta property="og:image" content="assets/shots/home.png" />
+    <link rel="icon" href="assets/icon-512.png" type="image/png" />
+    <link rel="stylesheet" href="assets/style.css" />
+  </head>
+  <body>
+    <header class="top">
+      <a class="brand" href="#top" aria-label="F2PX">
+        <svg class="brand__mark" viewBox="0 0 256 256" aria-hidden="true">
+          <path d="M54 88V54h34M202 88V54h-34M54 168v34h34M202 168v34h-34" fill="none" stroke="currentColor" stroke-width="16" stroke-linecap="square" />
+          <path d="M90 90l26 26M140 140l26 26M166 90l-26 26M116 140l-26 26" fill="none" stroke="currentColor" stroke-width="26" stroke-linecap="square" />
+          <rect x="119" y="119" width="18" height="18" fill="currentColor" />
+        </svg>
+        <span>F2PX</span>
+      </a>
+      <nav class="top__nav" aria-label="Разделы">
+        <a href="#privacy" data-i18n="nav.privacy">Приватность</a>
+        <a href="#features" data-i18n="nav.features">Возможности</a>
+        <a href="#screens" data-i18n="nav.screens">Скриншоты</a>
+        <a href="#install" data-i18n="nav.install">Установка</a>
+        <a href="#faq" data-i18n="nav.faq">FAQ</a>
+      </nav>
+      <div class="top__right">
+        <div class="lang" role="group" aria-label="Language">
+          <button type="button" data-lang="ru" aria-pressed="true">RU</button>
+          <button type="button" data-lang="en" aria-pressed="false">EN</button>
+        </div>
+        <a class="btn btn--small" href="#download" data-i18n="nav.download">Скачать</a>
+      </div>
+    </header>
+
+    <main id="top">
+      <!-- HERO -->
+      <section class="hero" id="download">
+        <div class="hero__bg" aria-hidden="true">
+          <svg class="hero__decor" viewBox="-500 -500 1000 1000" preserveAspectRatio="xMidYMid slice">
+            <g fill="none" stroke="currentColor" stroke-width="1">
+              <circle r="150" opacity=".5" />
+              <circle r="260" opacity=".4" stroke-dasharray="2 10" />
+              <circle r="380" opacity=".35" />
+              <circle r="470" opacity=".2" />
+              <path d="M-500 0H-120M120 0H500M0 -500V-120M0 120V500" opacity=".5" />
+              <path d="M-353 -353L-96 -96M96 96L353 353M353 -353L96 -96M-96 96L-353 353" opacity=".22" />
+            </g>
+          </svg>
+        </div>
+        <div class="hero__label label">System / Download</div>
+        <h1 class="hero__logo">F2PX</h1>
+        <p class="hero__slogan">Your web. Your space.</p>
+        <p class="hero__lead" data-i18n="hero.lead">Быстрый браузер на движке Chromium, в котором конфиденциальность включена по умолчанию: блокировка трекеров, только HTTPS и никакой телеметрии.</p>
+
+        <div class="dl" id="dl-card">
+          <a class="btn btn--primary btn--big" id="dl-setup" href="downloads/F2PX-Browser-Setup.exe" download>
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"><path d="M12 4v11M7 11l5 5 5-5M5 20h14" /></svg>
+            <span data-i18n="dl.setup">Скачать для Windows</span>
+          </a>
+          <div class="dl__meta mono" id="dl-meta">v1.0.0 · Windows 10/11 · x64</div>
+          <a class="dl__alt" id="dl-portable" href="downloads/F2PX-Browser.exe" download>
+            <span data-i18n="dl.portable">Portable-версия, без установки</span>
+            <span class="mono" id="dl-portable-size"></span>
+          </a>
+          <p class="dl__notwin" id="notwin" hidden data-i18n="dl.notwin">F2PX пока доступен только для Windows 10/11.</p>
+        </div>
+        <p class="hero__warn" data-i18n-html="dl.warn">Установщик пока не подписан цифровым сертификатом, поэтому Windows может показать предупреждение SmartScreen. <a href="#install">Как продолжить</a>.</p>
+      </section>
+
+      <!-- PRIVACY -->
+      <section class="sec" id="privacy">
+        <header class="sec__head">
+          <span class="label">01 / <span data-i18n="nav.privacy">Приватность</span></span>
+          <span class="sec__line"></span>
+        </header>
+        <p class="sec__lead" data-i18n="pv.lead">Конфиденциальность в F2PX — не отдельная настройка, а поведение по умолчанию. Вот что это значит на практике.</p>
+        <div class="grid grid--3">
+          <article class="cell"><span class="cell__n mono">01</span><h3 data-i18n="pv1.t">Ноль запросов без вас</h3><p data-i18n="pv1.d">В простое браузер ничего не отправляет в сеть: ни телеметрии, ни синхронизации. Обновление списка защиты и проверка новой версии — по вашему выбору и выключены, пока вы их не включите. Мы проверяем это автоматическим тестом с логирующим прокси.</p></article>
+          <article class="cell"><span class="cell__n mono">02</span><h3 data-i18n="pv2.t">Блокировка трекеров</h3><p data-i18n="pv2.d">Встроенный список известных рекламных и аналитических трекеров. Режимы «Стандарт» и «Строгий», счётчик заблокированного прямо в адресной строке.</p></article>
+          <article class="cell"><span class="cell__n mono">03</span><h3 data-i18n="pv3.t">Только HTTPS</h3><p data-i18n="pv3.d">Сайты открываются по защищённому соединению. Если у сайта его нет, вы увидите предупреждение, а не молчаливый незащищённый HTTP.</p></article>
+          <article class="cell"><span class="cell__n mono">04</span><h3 data-i18n="pv4.t">Без утечек</h3><p data-i18n="pv4.d">WebRTC не раскрывает адрес в локальной сети, проверка орфографии выключена (иначе словари качаются с серверов Google), подсказки поиска выключены, Do Not Track и GPC включены.</p></article>
+          <article class="cell"><span class="cell__n mono">05</span><h3 data-i18n="pv5.t">Данные только у вас</h3><p data-i18n="pv5.d">История, закладки, настройки и сессия лежат на вашем диске. Нет аккаунта, облака и синхронизации. Поиск по умолчанию — DuckDuckGo.</p></article>
+          <article class="cell"><span class="cell__n mono">06</span><h3 data-i18n="pv6.t">Стирается по вашему желанию</h3><p data-i18n="pv6.d">Приватные окна ничего не сохраняют. Дополнительно можно очищать cookies и историю при каждом закрытии браузера.</p></article>
+          <article class="cell"><span class="cell__n mono">07</span><h3 data-i18n="pv7.t">Защита от фишинга и вредоносных сайтов</h3><p data-i18n="pv7.d">Встроенный офлайн-список около 387 тысяч опасных сайтов (URLhaus и Phishing.Database). Переход останавливается до загрузки страницы. Плюс предупреждения о «похожих» адресах вроде paypa1.com. Список можно обновлять раз в сутки — по желанию.</p></article>
+          <article class="cell"><span class="cell__n mono">08</span><h3 data-i18n="pv8.t">Безопасные загрузки</h3><p data-i18n="pv8.d">Каждый файл получает метку «скачано из интернета», поэтому Windows SmartScreen и Defender проверяют его. Программы вида invoice.pdf.exe помечаются как замаскированные, а запуск исполняемых файлов требует подтверждения.</p></article>
+          <article class="cell"><span class="cell__n mono">09</span><h3 data-i18n="pv9.t">Уведомления об обновлениях</h3><p data-i18n="pv9.d">По желанию браузер раз в сутки спрашивает, вышла ли новая версия, и показывает ссылку на страницу загрузки. Он ничего не скачивает и не запускает сам, поэтому взломанный сервер не сможет выполнить код на вашем компьютере.</p></article>
+        </div>
+
+        <div class="stat">
+          <span class="stat__num mono">0</span>
+          <div>
+            <div class="stat__t" data-i18n="pv.stat">сетевых запросов за 30 секунд запуска и простоя</div>
+            <p class="stat__d" data-i18n="pv.stat.d">Браузер запускался за логирующим прокси, открывал свои страницы и простаивал: прокси не увидел ни одного запроса. Ваши переходы на сайты, конечно, идут в сеть.</p>
+          </div>
+        </div>
+
+        <div class="box box--honest">
+          <h3 class="label" data-i18n="pv.not.t">Чего F2PX не делает</h3>
+          <ul class="list list--plain">
+            <li data-i18n="pv.not1">F2PX — не Tor и не VPN. Он не скрывает ваш IP-адрес и не делает вас анонимным: сайты и провайдер по-прежнему видят, откуда вы.</li>
+            <li data-i18n="pv.not2">Отпечаток браузера (fingerprint) у Chromium индивидуален, F2PX его не унифицирует. Для этого нужен Tor Browser.</li>
+            <li data-i18n="pv.not3">Список трекеров компактный и консервативный: он убирает самое частое, но не заменяет полноценный блокировщик вроде uBlock Origin.</li>
+            <li data-i18n="pv.not5">Зашифрованы данные самого F2PX. Кэш и localStorage сайтов хранит Chromium (cookies он защищает средствами Windows). Пароль на запуск нельзя восстановить: если вы его забыли, остаётся только стереть данные.</li>
+            <li data-i18n="pv.not4">Режим «Chrome compatibility» (нужен для входа в Google) сообщает сайтам, что вы используете Chrome; его можно выключить в Settings → Privacy.</li>
+            <li data-i18n="pv.not6">Менеджера паролей в F2PX нет намеренно: хранилище паролей в браузере — главная цель для вредоносных программ. Используйте отдельный менеджер (Bitwarden, KeePassXC).</li>
+            <li data-i18n="pv.not7">Список опасных сайтов — снимок на дату сборки, пока вы не включите обновление, а предупреждения о похожих адресах иногда срабатывают зря. Сам Chromium обновляется только новой версией F2PX. Защита снижает риск, но не заменяет осторожность и антивирус.</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- FEATURES -->
+      <section class="sec" id="features">
+        <header class="sec__head">
+          <span class="label">02 / <span data-i18n="nav.features">Возможности</span></span>
+          <span class="sec__line"></span>
+        </header>
+        <div class="grid">
+          <article class="cell"><span class="cell__n mono">01</span><h3 data-i18n="f1.t">Движок Chromium</h3><p data-i18n="f1.d">Современные сайты, видео и веб-приложения работают так же, как в привычных браузерах.</p></article>
+          <article class="cell"><span class="cell__n mono">02</span><h3 data-i18n="f2.t">Менеджер загрузок</h3><p data-i18n="f2.d">Прогресс, скорость, пауза, повтор и запуск файла. По умолчанию в Downloads\F2PX.</p></article>
+          <article class="cell"><span class="cell__n mono">03</span><h3 data-i18n="f3.t">Вкладки без лишнего</h3><p data-i18n="f3.d">Закрепление, перетаскивание, возврат закрытых вкладок и восстановление прошлой сессии.</p></article>
+          <article class="cell"><span class="cell__n mono">04</span><h3 data-i18n="f4.t">Приватные окна</h3><p data-i18n="f4.d">История, cookies и кэш стираются, когда закрывается последнее приватное окно.</p></article>
+          <article class="cell"><span class="cell__n mono">05</span><h3 data-i18n="f5.t">Стартовая страница</h3><p data-i18n="f5.d">Быстрый доступ к любимым сайтам: добавляйте, переставляйте, меняйте названия и иконки.</p></article>
+          <article class="cell"><span class="cell__n mono">06</span><h3 data-i18n="f6.t">Закладки и история</h3><p data-i18n="f6.d">Папки, поиск, перетаскивание. Импорт и экспорт закладок из Chrome, Edge и Firefox.</p></article>
+          <article class="cell"><span class="cell__n mono">07</span><h3 data-i18n="f7.t">Горячие клавиши</h3><p data-i18n="f7.d">Ctrl+T, Ctrl+L, Ctrl+D, Ctrl+J, Ctrl+Shift+T — всё, к чему вы привыкли.</p></article>
+          <article class="cell"><span class="cell__n mono">08</span><h3 data-i18n="f8.t">Только локально</h3><p data-i18n="f8.d">Без аккаунта, синхронизации и телеметрии. История и настройки лежат на вашем диске.</p></article>
+        </div>
+      </section>
+
+      <!-- SCREENSHOTS -->
+      <section class="sec" id="screens">
+        <header class="sec__head">
+          <span class="label">03 / <span data-i18n="nav.screens">Скриншоты</span></span>
+          <span class="sec__line"></span>
+        </header>
+        <div class="tabs" role="tablist" aria-label="Screenshots">
+          <button type="button" role="tab" data-shot="home" aria-selected="true" data-i18n="s.home">Старт</button>
+          <button type="button" role="tab" data-shot="setup" aria-selected="false" data-i18n="s.setup">Мастер</button>
+          <button type="button" role="tab" data-shot="downloads" aria-selected="false" data-i18n="s.downloads">Загрузки</button>
+          <button type="button" role="tab" data-shot="bookmarks" aria-selected="false" data-i18n="s.bookmarks">Закладки</button>
+          <button type="button" role="tab" data-shot="privacy" aria-selected="false" data-i18n="s.privacy">Приватность</button>
+          <button type="button" role="tab" data-shot="settings" aria-selected="false" data-i18n="s.settings">Настройки</button>
+        </div>
+        <div class="frame">
+          <div class="frame__tabs">
+            <span class="frame__tab"><i></i><b id="frame-title">New tab</b><em>×</em></span>
+            <span class="frame__plus">+</span>
+          </div>
+          <div class="frame__bar">
+            <span class="frame__nav">←&nbsp;&nbsp;→&nbsp;&nbsp;↻</span>
+            <span class="frame__addr mono" id="frame-addr">Search or enter address</span>
+          </div>
+          <img id="shot" src="assets/shots/home.png" width="1920" height="1140" alt="Стартовая страница F2PX" loading="lazy" />
+        </div>
+      </section>
+
+      <!-- INSTALL -->
+      <section class="sec" id="install">
+        <header class="sec__head">
+          <span class="label">04 / <span data-i18n="nav.install">Установка</span></span>
+          <span class="sec__line"></span>
+        </header>
+        <ol class="steps">
+          <li><span class="mono">01</span><div><h3 data-i18n="i1.t">Скачайте установщик</h3><p data-i18n="i1.d">Кнопка «Скачать для Windows» вверху страницы. Файл F2PX-Browser-Setup.exe.</p></div></li>
+          <li><span class="mono">02</span><div><h3 data-i18n="i2.t">Запустите его</h3><p data-i18n-html="i2.d">Если Windows покажет «Система Windows защитила ваш компьютер», нажмите <b>Подробнее</b>, затем <b>Выполнить в любом случае</b>. Это нормально для приложений без платной подписи.</p></div></li>
+          <li><span class="mono">03</span><div><h3 data-i18n="i3.t">Готово</h3><p data-i18n="i3.d">F2PX Browser появится в меню «Пуск» и на рабочем столе. Установка не требует прав администратора.</p></div></li>
+        </ol>
+
+        <div class="cols">
+          <div class="box">
+            <h3 class="label" data-i18n="req.t">Требования</h3>
+            <ul class="kv mono">
+              <li><span>OS</span><span>Windows 10 / 11, 64-bit</span></li>
+              <li><span data-i18n="req.disk">Диск</span><span>~350 MB</span></li>
+              <li><span>RAM</span><span data-i18n="req.ram">от 4 GB</span></li>
+              <li><span data-i18n="req.eng">Движок</span><span>Chromium 152</span></li>
+            </ul>
+          </div>
+          <div class="box" id="verify">
+            <h3 class="label" data-i18n="ver.t">Проверка файла (SHA-256)</h3>
+            <p class="box__text" data-i18n="ver.d">Сравните хеш скачанного файла с указанным ниже. Если они различаются, не запускайте файл.</p>
+            <div class="hash">
+              <span class="hash__name mono">F2PX-Browser-Setup.exe</span>
+              <code class="hash__value" id="hash-setup">—</code>
+              <button type="button" class="hash__copy" data-copy="hash-setup" data-i18n="ver.copy">Копировать</button>
+            </div>
+            <div class="hash">
+              <span class="hash__name mono">F2PX-Browser.exe</span>
+              <code class="hash__value" id="hash-portable">—</code>
+              <button type="button" class="hash__copy" data-copy="hash-portable" data-i18n="ver.copy">Копировать</button>
+            </div>
+            <p class="box__text"><span data-i18n="ver.cmd">В PowerShell:</span> <code class="inline">Get-FileHash .\F2PX-Browser-Setup.exe -Algorithm SHA256</code></p>
+          </div>
+        </div>
+      </section>
+
+      <!-- FAQ -->
+      <section class="sec" id="faq">
+        <header class="sec__head">
+          <span class="label">05 / FAQ</span>
+          <span class="sec__line"></span>
+        </header>
+        <div class="faq">
+          <details><summary data-i18n="q1.q">Почему Windows показывает предупреждение при запуске?</summary><p data-i18n="q1.a">Установщик пока не подписан платным сертификатом разработчика, поэтому SmartScreen не знает его издателя. Скачивайте файл только с этого сайта и сверяйте SHA-256 из раздела «Установка».</p></details>
+          <details><summary data-i18n="q2.q">Работает ли вход в Gmail / аккаунт Google?</summary><p data-i18n="q2.a">Google блокирует вход во встроенных браузерах, поэтому в F2PX есть режим «Chrome compatibility» (Настройки → Privacy, включён по умолчанию). Он помогает, но это мера совместимости без гарантий — Google может изменить проверки.</p></details>
+          <details><summary data-i18n="q3.q">Будут ли работать Netflix, Spotify и другой защищённый контент?</summary><p data-i18n="q3.a">Нет: защита контента Widevine (DRM) в F2PX недоступна. Обычные сайты, видео и музыка без DRM работают.</p></details>
+          <details><summary data-i18n="q4.q">Поддерживаются ли расширения Chrome?</summary><p data-i18n="q4.a">Пока нет.</p></details>
+          <details><summary data-i18n="q5.q">Где хранятся мои данные и как всё удалить?</summary><p data-i18n="q5.a">В папке %APPDATA%\F2PX Browser. Удалите программу через «Параметры → Приложения» — данные при этом остаются; чтобы стереть их полностью, удалите эту папку.</p></details>
+          <details><summary data-i18n="q7.q">F2PX — это анонимный браузер вроде Tor?</summary><p data-i18n="q7.a">Нет. F2PX защищает от слежки: блокирует трекеры, не шлёт данные разработчикам и не хранит ничего в облаке. Но он не скрывает ваш IP-адрес и не маскирует отпечаток браузера. Если вам нужна настоящая анонимность, используйте Tor Browser.</p></details>
+          <details><summary data-i18n="q8.q">Как проверить, что браузер ничего не отправляет сам?</summary><p data-i18n="q8.a">Запустите его за любым логирующим прокси или в Wireshark: в простое трафика нет. В исходниках проекта есть автоматический тест tests/e2e/06-no-background-traffic.mjs, который делает ровно это.</p></details>
+          <details><summary data-i18n="q9.q">Что именно шифруется?</summary><p data-i18n="q9.a">История, закладки, настройки, список загрузок и сохранённая сессия хранятся на диске зашифрованными (AES-256-GCM). Ключ защищён вашей учётной записью Windows (DPAPI) или, если вы задали, паролем на запуск. Адреса сайтов запрашиваются через зашифрованный DNS (DoH), а сами сайты открываются по HTTPS.</p></details>
+          <details><summary data-i18n="q10.q">Что будет, если я забуду пароль на запуск?</summary><p data-i18n="q10.a">Восстановить данные нельзя — в этом смысл шифрования. На окне ввода пароля есть «Forgot password?»: он стирает все данные F2PX и начинает с чистого профиля. Пароль необязателен: без него данные всё равно зашифрованы ключом вашей учётной записи Windows.</p></details>
+          <details><summary data-i18n="q6.q">Есть ли версии для macOS и Linux?</summary><p data-i18n="q6.a">Пока только Windows 10/11 (x64).</p></details>
+        </div>
+      </section>
+    </main>
+
+    <footer class="foot">
+      <div class="foot__row mono">
+        <span>F2PX BROWSER <span id="foot-version">v1.0.0</span></span>
+        <span data-i18n="foot.note">Chromium · Electron · Windows 10/11</span>
+      </div>
+    </footer>
+
+    <script src="downloads.js"></script>
+    <script src="assets/app.js"></script>
+  </body>
+</html>

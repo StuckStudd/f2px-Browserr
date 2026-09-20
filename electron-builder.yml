@@ -1,0 +1,63 @@
+appId: com.f2px.browser
+productName: F2PX Browser
+copyright: Copyright © 2026 F2PX
+directories:
+  output: release
+  buildResources: build
+
+# Only the bundled output ships; there are no runtime npm dependencies (SQLite is built into Electron's Node).
+files:
+  - out/**/*
+  - package.json
+  - '!**/*.map'
+asar: true
+compression: maximum
+
+# Icons are read at runtime for the tray and window (paths.resource in src/main/paths.ts).
+extraResources:
+  - from: build/icon.png
+    to: icon.png
+  - from: build/icon.ico
+    to: icon.ico
+  - from: build/tray.png
+    to: tray.png
+  - from: build/threats.bin
+    to: threats.bin
+  - from: build/threats.meta.json
+    to: threats.meta.json
+
+# Only Chromium's own locales we ship UI for; keeps the package smaller.
+electronLanguages:
+  - en-US
+  - ru
+
+win:
+  icon: build/icon.ico
+  target:
+    - target: nsis
+      arch: [x64]
+    - target: portable
+      arch: [x64]
+  legalTrademarks: F2PX
+
+nsis:
+  # The wizard is always English (en-US), whatever the Windows display language is.
+  language: '1033'
+  multiLanguageInstaller: false
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  allowElevation: true
+  createDesktopShortcut: always
+  createStartMenuShortcut: true
+  shortcutName: F2PX Browser
+  installerIcon: build/icon.ico
+  uninstallerIcon: build/icon.ico
+  installerHeaderIcon: build/icon.ico
+  uninstallDisplayName: F2PX Browser
+  runAfterFinish: true
+  deleteAppDataOnUninstall: false
+  artifactName: F2PX-Browser-Setup.${ext}
+
+portable:
+  artifactName: F2PX-Browser.${ext}

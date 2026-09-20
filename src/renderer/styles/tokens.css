@@ -1,0 +1,80 @@
+/* F2PX design tokens. Near-monochrome, thin lines, tiny radius. */
+:root {
+  --bg-0: #050505;
+  --bg-1: #0a0a0a;
+  --bg-2: #111111;
+  --bg-3: #1a1a1a;
+  --fg-faint: #4a4a4a;
+  --fg-dim: #6a6a6a;
+  --fg-mute: #888888;
+  --fg: #cccccc;
+  --fg-strong: #ffffff;
+  --accent: var(--fg-strong);
+  --danger: #d9534f;
+  --ok: #9fd6a4;
+
+  --line: rgba(255, 255, 255, 0.09);
+  --line-2: rgba(255, 255, 255, 0.16);
+  --line-3: rgba(255, 255, 255, 0.3);
+  --hover: rgba(255, 255, 255, 0.05);
+  --press: rgba(255, 255, 255, 0.09);
+  --shadow: 0 12px 32px rgba(0, 0, 0, 0.55);
+  --glow: 0 0 12px color-mix(in srgb, var(--accent) 35%, transparent);
+
+  --font-ui: 'Inter Variable', 'Segoe UI', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', 'Cascadia Mono', Consolas, ui-monospace, monospace;
+
+  --radius: 2px;
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --dur: 150ms;
+
+  /* chrome metrics (kept in sync with shared/settings.ts chromeLayout) */
+  --tabs-h: 38px;
+  --toolbar-h: 42px;
+  --bookmarks-h: 30px;
+  --controls-w: 138px;
+
+  color-scheme: dark;
+}
+
+:root[data-theme='light'] {
+  --bg-0: #f3f3f1;
+  --bg-1: #ffffff;
+  --bg-2: #ebebe8;
+  --bg-3: #dcdcd8;
+  --fg-faint: #b4b4b0;
+  --fg-dim: #8a8a86;
+  --fg-mute: #666663;
+  --fg: #2c2c2a;
+  --fg-strong: #050505;
+  --danger: #b8322e;
+  --ok: #2f7d3a;
+  --line: rgba(0, 0, 0, 0.1);
+  --line-2: rgba(0, 0, 0, 0.18);
+  --line-3: rgba(0, 0, 0, 0.35);
+  --hover: rgba(0, 0, 0, 0.05);
+  --press: rgba(0, 0, 0, 0.09);
+  --shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
+  color-scheme: light;
+}
+
+:root[data-compact='on'] {
+  --tabs-h: 32px;
+  --toolbar-h: 36px;
+  --bookmarks-h: 26px;
+}
+
+/* Animations can be switched off globally from Settings. */
+:root[data-anim='off'] *,
+:root[data-anim='off'] *::before,
+:root[data-anim='off'] *::after {
+  animation-duration: 0s !important;
+  animation-delay: 0s !important;
+  transition-duration: 0s !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur: 0s;
+  }
+}
