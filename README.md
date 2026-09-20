@@ -1,163 +1,34 @@
-# F2PX Browser
+F2PX Browser
+Minimalist futuristic browser for Windows 10/11 built on Electron + Chromium, React, and TypeScript.
 
-Минималистичный футуристичный браузер для Windows 10/11 на **Electron + Chromium**, **React** и **TypeScript**.
-Тёмный монохромный интерфейс, тонкие линии, моноширинная типографика, много свободного места.
+Dark monochrome interface, thin lines, monospace typography, plenty of whitespace.
 
-Это настоящий браузер: вкладки — это отдельные `WebContentsView` с реальным Chromium, загрузки идут через
-сетевой стек Chromium, история/закладки/настройки хранятся локально (SQLite + JSON) и переживают перезапуск.
+This is a real browser: tabs are individual WebContentsView instances with real Chromium, downloads run through the Chromium network stack, and history/bookmarks/settings are stored locally (SQLite + JSON) and persist across restarts.
 
-```
-F2PX
+Вот исправленный вариант файла README.md. Непонятные знаки в самом конце текста были битой кодировкой (попытка записать заголовок # f2px-Browserr в UTF-16 вместо UTF-8) — этот фрагмент полностью удалён.Ниже представлен переведённый и оформленный документ:F2PX BrowserMinimalist futuristic browser for Windows 10/11 built on Electron + Chromium, React, and TypeScript.Dark monochrome interface, thin lines, monospace typography, plenty of whitespace.This is a real browser: tabs are individual WebContentsView instances with real Chromium, downloads run through the Chromium network stack, and history/bookmarks/settings are stored locally (SQLite + JSON) and persist across restarts.F2PX
 YOUR WEB. YOUR SPACE.
-```
-
-## Быстрый старт
-
-```bash
-npm install          # зависимости (нативных модулей нет — SQLite встроен в Node внутри Electron)
-npm run dev          # режим разработки с HMR
-npm run build        # проверка типов + сборка в out/
-npm run dist         # Windows-установщик и portable в release/
-```
-
-После `npm run dist` в папке `release/`:
-
-| Файл                     | Что это                                              |
-| ------------------------ | ---------------------------------------------------- |
-| `F2PX-Browser-Setup.exe` | NSIS-установщик (на пользователя, выбор папки, ярлыки) |
-| `F2PX-Browser.exe`       | portable-версия — запускается двойным щелчком        |
-| `win-unpacked/`          | распакованное приложение (`npm run dist:dir`)         |
-
-> Установщик не подписан сертификатом, поэтому Windows SmartScreen может показать предупреждение
-> («Подробнее → Выполнить в любом случае»). Для публичного релиза подпишите его: купите сертификат подписи кода (OV/EV) и перед `npm run dist`
-> задайте переменные `CSC_LINK` (путь к `.pfx` или base64) и `CSC_KEY_PASSWORD` — electron-builder подпишет и установщик, и `F2PX-Browser.exe`
-> автоматически, менять конфиг не нужно. Без сертификата подпись невозможна; самоподписанный сертификат SmartScreen не убирает.
-
-Если `npm run dev` запускается из терминала VS Code/Claude Code, переменная `ELECTRON_RUN_AS_NODE=1` мешает Electron —
-скрипты в `scripts/run.cjs` сбрасывают её автоматически.
-
-## Возможности
-
-- **Вкладки**: создание/закрытие, переключение, восстановление закрытых (Ctrl+Shift+T), закрепление, перетаскивание,
-  открытие ссылок средней кнопкой мыши / Ctrl+клик / `target=_blank`, звук + mute, адаптивная плотность при большом числе вкладок,
-  восстановление последней сессии (ленивая загрузка неактивных вкладок).
-- **Omnibox**: URL или поиск (Google, Bing, DuckDuckGo, Brave Search), подсказки из закладок, истории, часто посещаемых сайтов и поисковой системы.
-- **Стартовая страница**: логотип, поиск-адресная строка, Quick Access (добавить / удалить / переименовать / сменить URL и иконку /
-  перетащить), часы, приветствие, свой фон, акцент.
-- **Загрузки**: реальные, с прогрессом, скоростью, временем, источником и путём; pause / resume / cancel / retry / open / show in folder / remove.
-  По умолчанию `%USERPROFILE%\Downloads\F2PX`, режимы «папка по умолчанию / спрашивать каждый раз / своя папка», уведомления Windows.
-- **История**: поиск, группировка по дням, сортировка, удаление записи / группы / всего.
-- **Закладки**: папки, drag & drop, поиск, редактирование, импорт и экспорт (Netscape HTML — Chrome/Edge/Firefox), Ctrl+D, панель закладок.
-- **Приватные окна**: отдельная in-memory сессия, история не пишется, данные стираются при закрытии последнего приватного окна.
-- **Страницы ошибок** в стиле F2PX: нет соединения, DNS, офлайн (с автоповтором), падение страницы, ошибка сертификата.
-- **Настройки**: General / Start page / Appearance / Privacy / Downloads / System / Shortcuts.
-- **Windows**: нативные кнопки окна (Snap Layouts), трей, автозапуск, «сворачивать в трей», отключение GPU-ускорения, тема Dark/Light/System.
-- Поиск по странице (Ctrl+F), масштаб, DevTools (F12), печать, полноэкранный режим (в т. ч. HTML5 fullscreen).
-
-## Горячие клавиши
-
-| Клавиши | Действие | Клавиши | Действие |
-| --- | --- | --- | --- |
-| Ctrl+T | новая вкладка | Ctrl+N | новое окно |
-| Ctrl+W | закрыть вкладку | Ctrl+Shift+N | приватное окно |
-| Ctrl+Shift+T | вернуть закрытую вкладку | Alt+← / Alt+→ | назад / вперёд |
-| Ctrl+Tab / Ctrl+Shift+Tab | следующая / предыдущая | Ctrl+R / F5 | обновить |
-| Ctrl+L | адресная строка | Ctrl+Shift+R | жёсткое обновление |
-| Ctrl+D | закладка | Ctrl+H | история |
-| Ctrl+J | загрузки | Ctrl+F | поиск на странице |
-| Ctrl+1…9 | вкладка по номеру | F12 | DevTools |
-
-Полный список — в `Settings → Shortcuts`.
-
-## Архитектура
-
-```
-src/
-  main/                 процесс Electron (Node)
-    browser/            окна, вкладки (Tab), омнибокс, контекстное меню, протокол f2px://, безопасность сессий
-    downloads/          DownloadManager (pause/resume/cancel/retry, скорость, уведомления)
-    history/ bookmarks/ quickaccess/ settings/   сервисы данных
-    storage/            SQLite (node:sqlite) + миграции
-    ipc/                типизированный RPC, рассылка событий
-    system/             трей
-  preload/              единственный sandbox-preload (мост RPC)
-  shared/               типы, IPC-контракт, разбор URL, горячие клавиши (общий код main + renderer)
+Quick StartBashnpm install        # dependencies (no native modules — SQLite is built into Node inside Electron)
+npm run dev        # development mode with HMR
+npm run build      # type checking + build to out/
+npm run dist       # Windows installer and portable version in release/
+After running npm run dist, you will find in the release/ directory:FileDescriptionF2PX-Browser-Setup.exeNSIS installer (per-user, custom directory selection, shortcuts)F2PX-Browser.exePortable version — launches with a double-clickwin-unpacked/Unpacked application (npm run dist:dir)Note: The installer is not signed with a digital certificate, so Windows SmartScreen may display a warning ("More info → Run anyway"). For a public release, sign it: purchase a code signing certificate (OV/EV) and set the CSC_LINK (path to .pfx or base64) and CSC_KEY_PASSWORD environment variables before running npm run dist. electron-builder will sign both the installer and F2PX-Browser.exe automatically without requiring configuration changes. Code signing is impossible without a valid certificate; self-signed certificates will not bypass SmartScreen.If npm run dev is launched from a VS Code or Claude Code terminal, the ELECTRON_RUN_AS_NODE=1 environment variable interferes with Electron — scripts in scripts/run.cjs reset it automatically.FeaturesTabs: Create/close, switch, restore closed tabs (Ctrl+Shift+T), pin, drag-and-drop, open links via middle-click / Ctrl+click / target=_blank, audio indicator + mute, adaptive density for large tab counts, last session restoration (lazy loading for inactive tabs).Omnibox: URL or search (Google, Bing, DuckDuckGo, Brave Search), suggestions from bookmarks, history, top sites, and search engine completions.Start Page: Logo, search/address bar, Quick Access (add / remove / rename / edit URL and icon / reorder via drag-and-drop), clock, greeting, custom background, accent color.Downloads: Real downloads with progress, speed, remaining time, source URL, and save path; pause / resume / cancel / retry / open / show in folder / remove. Default path is %USERPROFILE%\Downloads\F2PX, supports modes ("default folder / ask every time / custom folder"), Windows native notifications.History: Search, grouping by date, sorting, delete single record / group / clear all.Bookmarks: Folders, drag & drop, search, edit, import/export (Netscape HTML — compatible with Chrome/Edge/Firefox), Ctrl+D, bookmark bar.Incognito Windows: Isolated in-memory session, history is not recorded, data is wiped upon closing the last incognito window.Custom Error Pages: Network offline (with auto-retry), DNS errors, page crashes, certificate errors designed in F2PX style.Settings: General / Start page / Appearance / Privacy / Downloads / System / Shortcuts.Windows Integration: Native window controls (Snap Layouts support), system tray, autostart, "minimize to tray", option to disable GPU acceleration, Dark/Light/System theme support.Page Utilities: Find in page (Ctrl+F), page zoom, DevTools (F12), printing, fullscreen mode (including HTML5 fullscreen).Keyboard ShortcutsShortcutActionShortcutActionCtrl+TNew tabCtrl+NNew windowCtrl+WClose tabCtrl+Shift+NIncognito windowCtrl+Shift+TReopen closed tabAlt+← / Alt+→Back / ForwardCtrl+Tab / Ctrl+Shift+TabNext / Previous tabCtrl+R / F5RefreshCtrl+LFocus address barCtrl+Shift+RHard refreshCtrl+DBookmark pageCtrl+HHistoryCtrl+JDownloadsCtrl+FFind in pageCtrl+1…9Switch to tab by numberF12DevToolsFull list available in Settings → Shortcuts.Architecturesrc/
+  main/                Electron main process (Node)
+    browser/           Windows, tabs (Tab), omnibox, context menu, f2px:// protocol, session security
+    downloads/         DownloadManager (pause/resume/cancel/retry, speed, notifications)
+    history/ bookmarks/ quickaccess/ settings/   Data services
+    storage/           SQLite (node:sqlite) + migrations
+    ipc/               Typed RPC, event dispatcher
+    system/            System tray
+  preload/             Single sandboxed preload script (RPC bridge)
+  shared/              Types, IPC contract, URL parsing, shortcuts (shared between main + renderer)
   renderer/
-    shell/              интерфейс браузера: вкладки, тулбар, омнибокс, меню, панели
-    pages/              внутренние страницы f2px://home|history|downloads|bookmarks|settings|error
+    shell/             Browser shell interface: tabs, toolbar, omnibox, menus, panels
+    pages/             Internal pages f2px://home|history|downloads|bookmarks|settings|error
     components/ hooks/ lib/ styles/
-scripts/                run.cjs (лаунчер), generate-icons.cjs (иконки), prepare-site / serve-site / capture-site-screenshots
-website/                сайт со страницей скачивания (см. website/README.md)
-tests/                  юнит-тесты и e2e-проверки (см. ниже)
-```
-
-**Как устроено окно.** `BrowserWindow` (frameless + `titleBarOverlay`) содержит `WebContentsView` оболочки (React UI) и по одному
-`WebContentsView` на вкладку. Оболочка прозрачна и обычно занимает только верхнюю полосу; когда нужно всплывающее меню/панель,
-main-процесс на время растягивает её на всё окно — так меню рисуются поверх страницы в стиле F2PX (не нативные).
-
-**Внутренние страницы** (`f2px://history` и т. д.) — это одно React-приложение (`internal.html`), отдаваемое кастомным
-протоколом. Они получают мост `window.f2px` только пока показывают документ `f2px://`.
-
-## Приватность по умолчанию
-
-| Что | Как |
-| --- | --- |
-| Нет сетевых запросов «от себя» | Ни телеметрии, ни синхронизации. Обновление списка защиты и проверка новой версии **выключены по умолчанию** (см. ниже); в мастере первого запуска они предлагаются с явным описанием. Проверяется тестом `tests/e2e/06-no-background-traffic.mjs`: браузер за логирующим прокси 30 с ничего не отправляет. |
-| Защита от фишинга и вредоносных сайтов | Встроенный офлайн-список ~387 тыс. опасных хостов (URLhaus + Phishing.Database, `build/threats.bin`, 3 МБ, сверка по 53-битным хэшам). Переход на такой сайт останавливается до загрузки и показывает страницу-предупреждение; подресурсы с этих хостов блокируются на любой странице. Плюс эвристика «похожих адресов»: `paypa1.com`, `paypal.com.evil.xyz`, `paypal-login.com`, смешение алфавитов (IDN) — предупреждение только для хостов, которые вы ещё не открывали. «Всё равно продолжить» — за кнопкой Advanced и только до закрытия приложения. Обновить список: `Settings → Privacy → Update now` или автоматически раз в сутки (опция, ходит на abuse.ch и GitHub). |
-| Загрузки | Каждый файл получает метку Mark-of-the-Web (`Zone.Identifier`), поэтому Windows SmartScreen / Defender / Office Protected View проверяют его. Программы вида `invoice.pdf.exe` помечаются как замаскированные; запуск исполняемых файлов требует подтверждения. |
-| Уведомление об обновлениях | Опционально (`Settings → About`): раз в сутки читает маленький JSON (`{ "version", "url" }`) с вашего сайта и, если версия новее, показывает «Update / vX available» на главной. Ничего не скачивает и не запускает — только ссылка на страницу загрузки (https), поэтому скомпрометированный сервер обновлений не может выполнить код на компьютере. Адрес задаётся при сборке: `package.json → f2px.updateFeed`; `npm run site:prepare -- --site-url https://…` создаёт `website/latest.json`. |
-| Блокировка трекеров | Встроенный список известных рекламных/аналитических хостов (`src/main/privacy/trackerList.ts`), только для сторонних запросов. Режимы Off / Standard / Strict, счётчик в адресной строке. |
-| HTTPS-only | `http://` → `https://`; если у сайта нет HTTPS — страница-предупреждение и явный выбор «продолжить по HTTP». Локальные адреса не трогаются. |
-| Без утечек | WebRTC отдаёт только публичный интерфейс; проверка орфографии выключена (на Windows она качает словари с серверов Google); подсказки поиска выключены; Do Not Track + Global Privacy Control включены. |
-| Шифрование на диске | История, закладки, настройки, загрузки и сессия лежат в `f2px.vault` (AES-256-GCM). Ключ защищён Windows DPAPI или паролем на запуск (scrypt). Открытых копий на диске нет. Поиск по умолчанию — DuckDuckGo. |
-| Зашифрованный DNS | DNS-over-HTTPS (по умолчанию Quad9; Cloudflare / Mullvad / свой), режимы Automatic и Strict. |
-| Чистые ссылки | Из адресов убираются `utm_*`, `fbclid`, `gclid` и т. п. |
-| Первый запуск | Мастер: профиль (пароль по желанию), тема, поиск (рекомендуем DuckDuckGo), уровень приватности, ярлыки входа в сервисы. |
-| Стирание | Приватные окна ничего не сохраняют; опционально очистка cookies и/или истории при каждом выходе. |
-
-**Что шифруется:** данные самого F2PX. Кэш и localStorage сайтов хранит Chromium (cookies он защищает средствами Windows). Пароль на запуск восстановить нельзя — на окне ввода есть «Forgot password?», который стирает данные.
-
-**Чего F2PX не делает:** встроенного менеджера паролей нет намеренно — хранилище паролей в браузере это самая привлекательная цель для вредоносных программ и лишняя поверхность атаки; для паролей лучше отдельный менеджер (Bitwarden, KeePassXC) и вход через сам сайт. Список опасных сайтов — снимок на дату сборки (без включённого обновления он устаревает), эвристика похожих адресов иногда даёт ложные срабатывания, а сам Chromium внутри F2PX обновляется только пересборкой на новой версии Electron. Он не Tor и не VPN — IP-адрес не скрывается, отпечаток браузера Chromium не унифицируется, а встроенный
-список трекеров компактный (не замена uBlock Origin). Режим «Chrome compatibility» (нужен для входа в Google) сообщает сайтам, что это Chrome;
-его можно выключить в `Settings → Privacy`.
-
-## Безопасность
-
-- `contextIsolation`, `sandbox`, без `nodeIntegration` для всех вкладок и оболочки; строгий CSP во внутренних страницах.
-- Весь доступ renderer → main идёт через один RPC-канал: вызывающий определяется по `webContents` (не по своим заявлениям),
-  у каждого метода есть область (`shell` / `page` / `both`), `f2px://`-страницы доверяются только пока их главный фрейм — `f2px://`.
-- Веб-страницы не видят мост, не могут переходить на `f2px://`/`file://`, `javascript:` и другие схемы блокируются;
-  `mailto:`/`tel:` открываются только после подтверждения.
-- Разрешения: камера/микрофон/уведомления — по запросу пользователю, геолокация и прочее — запрещены.
-- Ошибки сертификата блокируются страницей ошибки; «продолжить» запоминается только для хоста и до закрытия приложения.
-- Запуск скачанных исполняемых файлов требует подтверждения. UA очищен от `Electron/…`.
-- Защита от фишинга/вредоносных сайтов, метка Mark-of-the-Web для загрузок, уведомления о новых версиях — см. таблицу «Приватность по умолчанию» выше.
-
-## Сайт для скачивания
-
-`website/` — статический сайт (RU/EN) с кнопкой скачивания, SHA-256, инструкцией по SmartScreen и скриншотами.
-`npm run dist && npm run site:prepare && npm run site:serve` — предпросмотр на http://localhost:8080; публикация описана в [website/README.md](website/README.md).
-
-## Проверки
-
-```bash
-npm run typecheck
-npm run test:unit      # разбор адресной строки, горячие клавиши, закладки, хэш списка угроз, «похожие адреса», версии, замаскированные exe
-npm run build && npm run test:e2e   # запускает настоящее приложение и проверяет функции через CDP
-```
-
-e2e-тест поднимает локальный HTTP-сервер (медленная загрузка файла для pause/resume, ссылки, попапы) и управляет реальным окном;
-ему нужен Windows с рабочим столом. Проверяются навигация, вкладки, загрузки, история, закладки, настройки, сессия,
-горячие клавиши, drag & drop, приватный режим, страницы ошибок, изоляция веб-страниц.
-
-## Известные ограничения
-
-- **DRM (Widevine)** в стандартной сборке Electron недоступен — Netflix/Spotify Web и подобные не будут воспроизводить защищённый контент.
-- **Расширения Chrome** не поддерживаются.
-- Сайты, блокирующие «встроенные» браузеры (вход в Google), обходятся режимом **Chrome compatibility** (`Settings → Privacy`, включён по умолчанию):
-  вкладки сообщают бренд «Google Chrome» в Client Hints и имеют `window.chrome`. Это мера совместимости без гарантий — Google может изменить проверки;
-  режим применяется к новым вкладкам. Выключите его, если не нужен.
-- Синхронизации между устройствами нет — данные только локальные.
-- Установщик не подписан (см. выше).
-#   f 2 p x - B r o w s e r r  
- 
+scripts/               run.cjs (launcher), generate-icons.cjs (icons), prepare-site / serve-site / capture-site-screenshots
+website/               Download website (see website/README.md)
+tests/                 Unit and E2E tests (see below)
+Window Layout: BrowserWindow (frameless + titleBarOverlay) hosts a WebContentsView for the shell (React UI) and one WebContentsView per active tab. The shell is transparent and normally occupies only the top strip; when a popup menu/panel is opened, the main process temporarily expands it across the entire window so menus render natively in F2PX style over web pages.Internal Pages (f2px://history, etc.) are a single React application (internal.html) served via a custom protocol. They are exposed to the window.f2px bridge strictly while displaying an f2px:// document.Privacy by DefaultFeatureDetailsZero Background TrafficNo telemetry, no telemetry background sync. Threat list updates and version checks are disabled by default; they can be explicitly opted-in during the first-run wizard. Verified by the tests/e2e/06-no-background-traffic.mjs test: no network requests are sent during 30s of idle time behind a logging proxy.Phishing & Malware ProtectionBuilt-in offline blocklist of ~387,000 dangerous hosts (URLhaus + Phishing.Database stored in build/threats.bin, 3 MB, matched using 53-bit hashes). Navigating to a listed host halts before loading and displays a warning page; subresources from these hosts are blocked everywhere. Includes typosquatting heuristics (paypa1.com, paypal.com.evil.xyz, mixed character sets/IDN) triggering warnings for unvisited hosts. "Proceed anyway" is placed behind Advanced options and persists only until the app closes. Blocklist update: Settings → Privacy → Update now or automatic daily updates (optional, fetches from abuse.ch / GitHub).Downloads SecurityFiles receive a Mark-of-the-Web (Zone.Identifier) tag, enforcing Windows SmartScreen / Defender / Office Protected View checks. Executable masks (e.g., invoice.pdf.exe) are flagged, and launching executables requires user confirmation.Update NotificationsOptional (Settings → About): Reads a lightweight JSON file ({ "version", "url" }) once daily from your update server and displays an "Update / vX available" prompt on the home page. It does not auto-download or execute code—it only links to the HTTPS download page, ensuring a compromised update server cannot achieve remote code execution. Update URL is defined during build: package.json → f2px.updateFeed; npm run site:prepare -- --site-url https://… generates website/latest.json.Tracker BlockingBuilt-in blocklist of known tracking/analytics domains (src/main/privacy/trackerList.ts), targeting third-party requests. Modes: Off / Standard / Strict, with a blocked request counter in the address bar.HTTPS-OnlyAutomatic http:// → https:// upgrade; displays a warning screen if HTTPS is unavailable with an option to proceed via HTTP. Local IP addresses/domains are excluded.Leak PreventionWebRTC exposes public interfaces only; spellcheck is disabled (prevents dictionary downloads from Google servers); search suggestions are disabled; Do Not Track and Global Privacy Control flags are enabled.Local EncryptionHistory, bookmarks, settings, downloads, and sessions are saved in f2px.vault encrypted with AES-256-GCM. The encryption key is protected using Windows DPAPI or an optional startup password (scrypt). No unencrypted copies remain on disk. Default search engine is DuckDuckGo.Encrypted DNSSupports DNS-over-HTTPS (Quad9 by default; Cloudflare / Mullvad / Custom options), featuring Automatic and Strict modes.Parameter CleaningURL tracking parameters (utm_*, fbclid, gclid, etc.) are stripped automatically.Setup WizardOn initial boot: Profile setup (optional password), theme selection, default search engine selection (DuckDuckGo recommended), privacy levels, and quick access presets.Data SanitizationIncognito mode leaves no disk traces; optional automated cookie and/or history wiping on application exit.What is encrypted: Local F2PX user data. Chromium manages site cache and localStorage directly (protecting cookies using Windows platform credentials). Startup passwords cannot be reset — a "Forgot password?" option is provided on the prompt screen to wipe local user data.What F2PX does not do: A built-in password manager is omitted by design to minimize attack surface; using an external password manager (e.g., Bitwarden, KeePassXC) is recommended. The malware blocklist is a static snapshot built at compile-time (it requires manual or scheduled updates to stay current), typosquatting heuristics may trigger occasional false positives, and Chromium updates require recompiling Electron. F2PX does not mask IP addresses or unify browser fingerprints like Tor or VPN tools, and the built-in tracker blocklist is lightweight (not a full replacement for uBlock Origin). The "Chrome compatibility" mode (required for Google login) identifies the browser as Google Chrome; this can be toggled in Settings → Privacy.SecuritycontextIsolation and sandbox are enforced, with nodeIntegration disabled for all tabs and shell contexts; strict Content Security Policy (CSP) applied to internal pages.Renderer-to-main IPC traffic passes through a single RPC gateway: caller identity is verified via webContents (rather than self-reported payloads), with defined scope levels (shell / page / both). f2px:// endpoints are privileged only when originating from f2px:// main frames.Web contents cannot access the IPC bridge or navigate to f2px://, file://, or javascript: protocols; mailto: and tel: schemes require explicit user confirmation.Permissions: Camera, microphone, and notifications require explicit user prompts; geolocation and other sensitive APIs are disabled.Certificate errors trigger an explicit block screen; user overrides are scoped per-host and cleared upon closing the application.Executing downloaded binaries requires confirmation. User-Agent strings strip Electron/… identifiers.Download WebsiteThe website/ directory contains a static website (RU/EN) featuring download links, SHA-256 checksums, SmartScreen guidance, and screenshots.Run npm run dist && npm run site:prepare && npm run site:serve to preview locally at http://localhost:8080.Testing & VerificationBashnpm run typecheck
+npm run test:unit       # URL parsing, shortcuts, bookmarks, threat list hashes, typosquatting, versions, masked executables
+npm run build && npm run test:e2e   # Launches the compiled application and tests features via CDP
+The E2E test suite starts a local HTTP server (testing slow downloads for pause/resume functionality, links, popups) and interacts with the application window via Chrome DevTools Protocol (CDP) on a desktop Windows environment. Tests cover navigation, tabs, downloads, history, bookmarks, settings, session persistence, hotkeys, drag-and-drop, incognito mode, error pages, and process isolation.Known LimitationsDRM (Widevine) is not included in standard Electron builds — DRM-protected media platforms (such as Netflix or Spotify Web) will not play back.Chrome Extensions are not supported.Sites blocking embedded browsers (e.g., Google sign-in) are bypassed using Chrome compatibility mode (Settings → Privacy, enabled by default). When active, tabs send a "Google Chrome" Client Hint brand and expose window.chrome. This compatibility measure is provided as-is without guarantees. Toggle off if unnecessary.Cross-device synchronization is not implemented — data is stored strictly locally.Installers are unsigned by default (see notes above).
