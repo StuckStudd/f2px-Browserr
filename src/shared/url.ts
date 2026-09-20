@@ -4,13 +4,14 @@ import type { SearchEngineId } from './types'
 export const INTERNAL_SCHEME = 'f2px'
 export const HOME_URL = `${INTERNAL_SCHEME}://home`
 
-export type InternalPage = 'home' | 'history' | 'downloads' | 'bookmarks' | 'settings' | 'error' | 'welcome' | 'unlock'
+export type InternalPage = 'home' | 'history' | 'downloads' | 'bookmarks' | 'settings' | 'privacy' | 'error' | 'welcome' | 'unlock'
 export const INTERNAL_PAGES: readonly InternalPage[] = [
   'home',
   'history',
   'downloads',
   'bookmarks',
   'settings',
+  'privacy',
   'error',
   'welcome',
   'unlock'
@@ -31,7 +32,7 @@ export function internalPageOf(url: string): InternalPage | null {
   }
 }
 
-export type ErrorKind = 'connection' | 'dns' | 'offline' | 'crash' | 'certificate' | 'httpsonly' | 'threat' | 'generic'
+export type ErrorKind = 'connection' | 'dns' | 'offline' | 'crash' | 'certificate' | 'httpsonly' | 'threat' | 'proxy' | 'generic'
 
 export function errorPageUrl(kind: ErrorKind, url: string, code?: number, detail?: string): string {
   const params = new URLSearchParams({ type: kind, url })

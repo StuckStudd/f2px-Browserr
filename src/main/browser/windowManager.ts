@@ -1,5 +1,7 @@
 import { BrowserWindow, session, type Session, type WebContents } from 'electron'
+import type { FireOptions, PageReport } from '../../shared/types'
 import { HOME_URL, resolveInput, type InternalPage } from '../../shared/url'
+import type { SessionKind } from '../privacy/policy'
 import type { AppServices } from '../services'
 import { debounce } from '../utils/emitter'
 import { configureSession } from './sessionSetup'
@@ -9,9 +11,15 @@ import { WindowController } from './windowController'
 export const NORMAL_PARTITION = 'persist:f2px'
 /** No `persist:` prefix -> kept in memory only; shared by all private windows. */
 export const PRIVATE_PARTITION = 'f2px-private'
+/** Private windows that route everything through Tor. Also in memory only. */
+export const TOR_PARTITION = 'f2px-tor'
+
+const PARTITIONS: Record<SessionKind, string> = { normal: NORMAL_PARTITION, private: PRIVATE_PARTITION, tor: TOR_PARTITION }
 
 export interface CreateWindowOptions {
   isPrivate: boolean
+  /** A private window whose traffic goes through Tor. */
+  tor?: boolean
   url?: string
   state?: SavedWindow
 }
@@ -34,35 +42,43 @@ export class WindowManager {
     private readonly sessionStore: SessionStore
   ) {
     services.hub.privacyOf = (contents) => this.ownerOf(contents)?.controller.isPrivate ?? false
-    services.downloads.setSessionProvider((isPrivate) => this.sessionFor(isPrivate))
+    services.downloads.setSessionProvider((isPrivate) => this.sessionFor(isPrivate ? 'private' : 'normal'))
     services.bookmarks.onChange.on(() => this.all().forEach((c) => c.pushState()))
-    services.privacy.onBlocked = (id) => this.noteBlocked(id)
+    services.privacy.onEvent = (kind, id) => this.noteEvent(kind, id)
+    services.settings.onChange.on(({ changed }) => {
+      if (changed.some((k) => k === 'webrtcPolicy' || k === 'fingerprintProtection')) {
+        for (const c of this.controllers) c.tabs.forEach((t) => t.applyWebRtcPolicy())
+      }
+    })
   }
 
-  private noteBlocked(webContentsId: number | undefined): void {
+  /** The privacy shield did something in a tab: remember it for the shield popup and the address bar counters. */
+  private noteEvent(kind: keyof PageReport, webContentsId: number | undefined): void {
     if (webContentsId === undefined) return
     for (const controller of this.controllers) {
       const tab = controller.tabs.find((t) => t.contents.id === webContentsId)
       if (tab) {
-        tab.blocked++
-        controller.pushState()
+        tab.report[kind]++
+        // Ads, trackers and fingerprint attempts drive the address-bar badge; the rest only shows in the popup.
+        if (kind === 'trackers' || kind === 'ads' || kind === 'fingerprint') controller.pushState()
         return
       }
     }
   }
 
   // ── sessions ───────────────────────────────────────────────────────────
-  sessionFor(isPrivate: boolean): Session {
-    const ses = session.fromPartition(isPrivate ? PRIVATE_PARTITION : NORMAL_PARTITION)
+  sessionFor(kind: SessionKind): Session {
+    const ses = session.fromPartition(PARTITIONS[kind])
     configureSession(
       ses,
       {
         settings: this.services.settings,
         downloads: this.services.downloads,
         privacy: this.services.privacy,
+        route: this.services.route,
         parentWindow: (contents) => this.ownerOf(contents)?.controller.window
       },
-      isPrivate
+      kind
     )
     return ses
   }
@@ -73,7 +89,8 @@ export class WindowManager {
   }
 
   createWindow(options: CreateWindowOptions): WindowController {
-    const controller = new WindowController(this, options.isPrivate, this.sessionFor(options.isPrivate), this.services)
+    const kind: SessionKind = options.tor ? 'tor' : options.isPrivate ? 'private' : 'normal'
+    const controller = new WindowController(this, kind, this.sessionFor(kind), this.services)
     this.controllers.add(controller)
     this.lastFocused = controller
 
@@ -133,16 +150,72 @@ export class WindowManager {
   controllerClosed(controller: WindowController): void {
     this.controllers.delete(controller)
     if (this.lastFocused === controller) this.lastFocused = this.all()[0] ?? null
-    if (controller.isPrivate && !this.all().some((c) => c.isPrivate)) this.wipePrivateData()
+    // Everything a private (or Tor) session collected disappears together with its last window.
+    if (controller.kind !== 'normal' && !this.all().some((c) => c.kind === controller.kind)) this.wipeSession(controller.kind)
+    if (controller.kind === 'tor' && !this.all().some((c) => c.kind === 'tor') && this.services.settings.get().proxyMode !== 'tor') {
+      this.services.tor.release()
+    }
+    if (controller.isPrivate && !this.all().some((c) => c.isPrivate)) this.services.downloads.purgePrivate()
     this.scheduleSessionSave()
   }
 
-  /** Everything a private session collected disappears together with its last window. */
-  private wipePrivateData(): void {
-    const ses = session.fromPartition(PRIVATE_PARTITION)
+  private wipeSession(kind: SessionKind): void {
+    const ses = session.fromPartition(PARTITIONS[kind])
     void ses.clearStorageData().catch(() => undefined)
     void ses.clearCache().catch(() => undefined)
-    this.services.downloads.purgePrivate()
+    void ses.clearAuthCache().catch(() => undefined)
+  }
+
+  /**
+   * "Fire": closes windows and erases what was collected, the fastest way to leave no trace.
+   * A new fingerprint identity is generated as well, so sites cannot connect the next visit with the last one.
+   */
+  async fire(options: FireOptions, initiator: WindowController | null): Promise<void> {
+    const { history, downloads, privacy, sites, shield } = this.services
+    // the window you end up in is the same kind as the one you pressed Fire in (private stays private, Tor stays Tor)
+    const freshKind: SessionKind = initiator?.kind ?? 'normal'
+    // Nothing that happens while windows disappear may overwrite the saved session with a half-empty one.
+    this.frozenUntil = Date.now() + 15_000
+    try {
+      if (options.tabs) {
+        const fresh = this.createWindow({ isPrivate: freshKind !== 'normal', tor: freshKind === 'tor' })
+        for (const c of this.all()) if (c !== fresh && !c.window.isDestroyed()) c.window.destroy()
+        this.lastFocused = fresh
+      }
+      if (options.history) {
+        history.clear()
+        this.sessionStore.clear()
+      }
+      if (options.downloads) downloads.clearHistory()
+      if (options.permissions) sites.clear({ permissions: true, exceptions: false })
+
+      const partitions = [NORMAL_PARTITION, PRIVATE_PARTITION, TOR_PARTITION, 'f2px-net']
+      await Promise.all(
+        partitions.map(async (name) => {
+          const ses = session.fromPartition(name)
+          try {
+            if (options.cookies) {
+              await ses.clearStorageData()
+              await ses.clearAuthCache()
+              await ses.clearHostResolverCache()
+              await ses.clearSharedDictionaryCache()
+            }
+            if (options.cache) {
+              await ses.clearCache()
+              await ses.clearCodeCaches({})
+            }
+            if (options.cookies || options.cache) await ses.closeAllConnections()
+          } catch (error) {
+            console.warn('[fire] could not clear', name, error)
+          }
+        })
+      )
+      if (options.cookies) shield.rotate()
+      privacy.flush()
+    } finally {
+      this.frozenUntil = 0
+      this.saveSessionNow()
+    }
   }
 
   ownerOf(contents: WebContents): SenderInfo | null {

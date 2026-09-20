@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { privacyLevelPatch, type NamedPrivacyLevel } from '@shared/privacy'
 import type { SearchEngineId, Settings, ThemeMode } from '@shared/types'
 import { Button, Toggle } from '@renderer/components/Controls'
 import { Icon } from '@renderer/components/Icon'
@@ -10,13 +11,16 @@ interface Props {
   update: (patch: Partial<Settings>) => void
 }
 
-type Preset = 'recommended' | 'maximum' | 'relaxed'
+type Preset = NamedPrivacyLevel
 
 const STEPS = ['Welcome', 'Profile', 'Appearance', 'Search', 'Privacy', 'Finish'] as const
 
 const ENGINES: { id: SearchEngineId; name: string; note: string; recommended?: boolean }[] = [
   { id: 'duckduckgo', name: 'DuckDuckGo', note: 'Does not build a profile of you or keep your search history.', recommended: true },
   { id: 'brave', name: 'Brave Search', note: 'Independent search index, no user tracking.' },
+  { id: 'startpage', name: 'Startpage', note: 'Google results without Google seeing you: your address and searches are not passed on.' },
+  { id: 'qwant', name: 'Qwant', note: 'European search engine that does not track or profile its users.' },
+  { id: 'mojeek', name: 'Mojeek', note: 'Independent crawler with no tracking at all.' },
   { id: 'google', name: 'Google', note: 'The most complete results. Google collects data about your searches.' },
   { id: 'bing', name: 'Bing', note: 'Microsoft search. Microsoft collects data about your searches.' }
 ]
@@ -27,21 +31,18 @@ const THEMES: { id: ThemeMode; name: string; note: string }[] = [
   { id: 'system', name: 'System', note: 'Follow Windows' }
 ]
 
-const PRESETS: Record<Preset, { name: string; note: string; patch: Partial<Settings> }> = {
-  recommended: {
-    name: 'Recommended',
-    note: 'Blocks known trackers, opens sites over HTTPS, encrypts DNS and cleans tracking parameters from links.',
-    patch: { trackerBlocking: 'standard', httpsOnly: true, secureDns: 'automatic', stripTrackingParams: true, clearCookiesOnExit: false }
+const PRESETS: Record<Preset, { name: string; note: string }> = {
+  standard: {
+    name: 'Standard',
+    note: 'Blocks ads and trackers, makes canvas / audio / WebGL fingerprints useless across sites, opens sites over HTTPS, encrypts DNS and cleans tracking parameters from links. Almost never breaks a site.'
   },
-  maximum: {
-    name: 'Maximum',
-    note: 'Everything above, plus strict tracker blocking, DNS that never falls back, and cookies cleared every time you quit. Some sites may break.',
-    patch: { trackerBlocking: 'strict', httpsOnly: true, secureDns: 'strict', stripTrackingParams: true, clearCookiesOnExit: true }
+  strict: {
+    name: 'Strict',
+    note: 'Everything in Standard, plus blocked third-party cookies, no cross-site Referer and no direct WebRTC. Your hardware, screen, time zone and language look the same as every F2PX user. A few sites may need an exception.'
   },
-  relaxed: {
-    name: 'Relaxed',
-    note: 'Standard tracker blocking and encrypted DNS with fallback. HTTPS-only is off so old sites always open.',
-    patch: { trackerBlocking: 'standard', httpsOnly: false, secureDns: 'automatic', stripTrackingParams: true, clearCookiesOnExit: false }
+  anonymous: {
+    name: 'Anonymous (Tor)',
+    note: 'Everything in Strict, and all traffic goes through the Tor network so sites do not see your IP address. Needs Tor Browser or tor.exe (F2PX does not include it), is slower, and erases cookies and history when you quit.'
   }
 }
 
@@ -59,7 +60,7 @@ export function WelcomePage({ settings, update }: Props) {
   const [lock, setLock] = useState(false)
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
-  const [preset, setPreset] = useState<Preset>('recommended')
+  const [preset, setPreset] = useState<Preset>('standard')
   const [signIn, setSignIn] = useState<string[]>([])
   const [refresh, setRefresh] = useState(true)
   const [error, setError] = useState('')
@@ -70,14 +71,14 @@ export function WelcomePage({ settings, update }: Props) {
 
   const applyPreset = (p: Preset): void => {
     setPreset(p)
-    update(PRESETS[p].patch)
+    update(privacyLevelPatch(settings, p))
   }
 
   const finish = async (): Promise<void> => {
     setBusy(true)
     setError('')
     try {
-      update({ userName: name.trim(), onboarded: true, threatProtection: true, protectionUpdates: refresh, checkUpdates: refresh, ...PRESETS[preset].patch })
+      update({ userName: name.trim(), onboarded: true, threatProtection: true, protectionUpdates: refresh, checkUpdates: refresh, ...privacyLevelPatch(settings, preset) })
       if (lock && !passwordProblem) await call('security.setPassword', '', password)
       for (const site of SIGN_IN.filter((s) => signIn.includes(s.id))) fire('page.navigate', site.url, { newTab: true })
       fire('page.navigate', 'f2px://home')
@@ -215,7 +216,7 @@ export function WelcomePage({ settings, update }: Props) {
                 <button key={p} type="button" className={`opt opt--wide ${preset === p ? 'is-selected' : ''}`} onClick={() => applyPreset(p)} aria-pressed={preset === p}>
                   <span className="opt__name">
                     {PRESETS[p].name}
-                    {p === 'recommended' && <span className="opt__badge">Default</span>}
+                    {p === 'standard' && <span className="opt__badge">Default</span>}
                   </span>
                   <span className="opt__note">{PRESETS[p].note}</span>
                 </button>
@@ -225,8 +226,8 @@ export function WelcomePage({ settings, update }: Props) {
               <div>
                 <span className="opt__name">Keep protection up to date</span>
                 <span className="opt__note">
-                  Phishing and malware protection is always on and works offline. This lets F2PX refresh its list of dangerous sites and check for a new version once a day — it
-                  contacts abuse.ch, GitHub and the update server, and sends no personal data. You can change it in Settings.
+                  Phishing, malware and ad-blocking protection is always on and works offline. This lets F2PX refresh its lists and check for a new version once a day — it
+                  contacts abuse.ch, GitHub, easylist.to and the update server, and sends no personal data. You can change it in the Privacy center.
                 </span>
               </div>
               <Toggle label="Keep protection up to date" checked={refresh} onChange={setRefresh} />

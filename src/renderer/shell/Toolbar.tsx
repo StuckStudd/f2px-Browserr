@@ -44,11 +44,15 @@ interface ToolbarProps {
   downloadsFlash: boolean
   downloadsOpen: boolean
   menuOpen: boolean
+  fireOpen: boolean
+  shieldOpen: boolean
   omniboxRef: React.RefObject<OmniboxHandle | null>
   onOmniboxOpen: (open: boolean) => void
   onStar: () => void
   onToggleDownloads: () => void
   onToggleMenu: () => void
+  onToggleFire: () => void
+  onToggleShield: () => void
 }
 
 export function Toolbar(props: ToolbarProps) {
@@ -74,12 +78,16 @@ export function Toolbar(props: ToolbarProps) {
         tab={tab}
         bookmarked={state.bookmarked}
         zoomPercent={state.zoomPercent}
-        blocked={tab?.blocked ?? 0}
+        blocked={(tab?.blocked ?? 0) + (tab?.fingerprint ?? 0)}
+        shieldsUp={tab?.shieldsUp ?? true}
+        shieldOpen={props.shieldOpen}
+        onShield={props.onToggleShield}
         onOpenChange={props.onOmniboxOpen}
         onStar={props.onStar}
       />
 
       <div className="toolbar__group">
+        <ToolButton icon="flame" label="Fire — clear everything (Ctrl+Shift+Del)" active={props.fireOpen} popupTrigger onClick={props.onToggleFire} />
         <ToolButton
           icon="download"
           label="Downloads (Ctrl+J)"

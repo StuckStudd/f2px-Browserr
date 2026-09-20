@@ -1,16 +1,18 @@
 import { WebContentsView, nativeTheme, type BrowserWindow, type ContextMenuParams, type Session, type WebContents } from 'electron'
 import { matchShortcut, type ShortcutAction } from '../../shared/shortcuts'
-import type { FindState, TabInfo, TabSecurity } from '../../shared/types'
+import type { FindState, PageReport, TabInfo, TabSecurity } from '../../shared/types'
 import { displayUrlFor, errorPageUrl, hostOf, internalPageOf, isInternalUrl } from '../../shared/url'
 import { paths } from '../paths'
 import type { AppServices } from '../services'
-import { applyChromeCompat } from './chromeCompat'
+import { newReport, policyFor, type SessionKind } from '../privacy/policy'
+import { applyEmulation } from './pageEmulation'
 import { classifyLoadError, isIgnorableLoadError } from './errorPages'
 import { classifyNavigation, openExternalWithConsent } from './externalProtocol'
 
 /** What a tab needs from the window that owns it. Implemented by WindowController. */
 export interface TabHost {
   readonly isPrivate: boolean
+  readonly kind: SessionKind
   readonly session: Session
   readonly services: AppServices
   readonly window: BrowserWindow
@@ -43,8 +45,8 @@ export class Tab {
   favicon: string | null = null
   loading = false
   audible = false
-  /** Trackers blocked since the last top-level navigation. */
-  blocked = 0
+  /** What the privacy shield did since the last top-level navigation. */
+  report: PageReport = newReport()
   private url = ''
   /** Host of the last committed document (`url` may already point at a pending navigation). */
   private committedHost = ''
@@ -67,14 +69,19 @@ export class Tab {
         nodeIntegration: false,
         webSecurity: true,
         allowRunningInsecureContent: false,
+        // The session preload (page shield) must also run inside iframes; nothing of Node is exposed in a sandbox.
+        nodeIntegrationInSubFrames: true,
         spellcheck: host.services.settings.get().spellcheck
       }
     })
     this.applyBackground('')
-    // Never reveal the local network address through WebRTC; only the public route is exposed.
-    this.contents.setWebRTCIPHandlingPolicy('default_public_interface_only')
+    this.applyWebRtcPolicy()
     this.wire()
-    if (host.services.settings.get().chromeCompat) void applyChromeCompat(this.contents)
+    const policy = policyFor(host.services.settings.get(), host.kind)
+    void applyEmulation(this.contents, {
+      chromeCompat: host.services.settings.get().chromeCompat,
+      neutralLocale: policy.fingerprint === 'strict'
+    })
 
     if (init.url && init.lazy) {
       this.lazyUrl = init.url
@@ -86,6 +93,18 @@ export class Tab {
 
   get contents(): WebContents {
     return this.view.webContents
+  }
+
+  /** Never reveal the local network address through WebRTC; strict mode also rules out direct UDP (it would bypass a proxy). */
+  applyWebRtcPolicy(): void {
+    if (this.contents.isDestroyed()) return
+    const policy = policyFor(this.host.services.settings.get(), this.host.kind)
+    this.contents.setWebRTCIPHandlingPolicy(policy.webrtc === 'proxy-only' ? 'disable_non_proxied_udp' : 'default_public_interface_only')
+  }
+
+  /** Ads + trackers blocked on the current page. */
+  get blocked(): number {
+    return this.report.trackers + this.report.ads
   }
 
   get currentUrl(): string {
@@ -193,7 +212,9 @@ export class Tab {
       audible: this.audible,
       muted: alive && wc.isAudioMuted(),
       security,
-      blocked: this.blocked
+      blocked: this.blocked,
+      fingerprint: this.report.fingerprint,
+      shieldsUp: alive ? this.host.services.privacy.policyForPage(this.host.kind, this.committedHost).shieldsUp : true
     }
   }
 
@@ -224,7 +245,7 @@ export class Tab {
             autoHideMenuBar: true,
             backgroundColor: '#0a0a0a',
             icon: paths.resource('icon.png'),
-            webPreferences: { sandbox: true, contextIsolation: true, nodeIntegration: false }
+            webPreferences: { sandbox: true, contextIsolation: true, nodeIntegration: false, nodeIntegrationInSubFrames: true }
           }
         }
       }
@@ -274,7 +295,8 @@ export class Tab {
     wc.on('did-start-navigation', (details) => {
       if (details.isMainFrame && !details.isSameDocument) {
         this.applyBackground(details.url)
-        this.blocked = 0
+        this.report = newReport()
+        this.host.services.shield.pageStarted(wc.id)
       }
     })
     wc.on('did-navigate', (_e, url) => this.onNavigated(url, false))

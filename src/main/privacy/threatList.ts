@@ -1,6 +1,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
-import { app, net } from 'electron'
+import { app } from 'electron'
+import { netFetch } from '../network/netSession'
 import { paths } from '../paths'
 
 import { encodeHosts, hashHost, parseHosts } from './threatHash'
@@ -100,7 +101,7 @@ export class ThreatList {
   async update(): Promise<ThreatListStatus> {
     const all = new Set<string>()
     for (const url of SOURCES) {
-      const res = await net.fetch(url, { credentials: 'omit', signal: AbortSignal.timeout(90_000) })
+      const res = await netFetch(url, { signal: AbortSignal.timeout(90_000) })
       if (!res.ok) throw new Error(`Could not download ${new URL(url).hostname} (HTTP ${res.status})`)
       const declared = Number(res.headers.get('content-length') ?? 0)
       if (declared > MAX_DOWNLOAD_BYTES) throw new Error('List is unexpectedly large')

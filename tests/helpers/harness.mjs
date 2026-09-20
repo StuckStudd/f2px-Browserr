@@ -99,16 +99,16 @@ export function startServer(port = 8899) {
     if (req.url === '/' || req.url.startsWith('/?')) {
       res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' })
       res.end('<!doctype html><title>Local Test Page</title><h1>F2PX test</h1><a id=dl href="/small.bin">small</a>')
-    } else if (req.url.startsWith('/pixel.gif')) {
+    } else if (req.url.startsWith('/pixel.gif') || req.url.startsWith('/assets/logo.gif')) {
       res.writeHead(200, { 'Content-Type': 'image/gif' })
       res.end(Buffer.from('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7', 'base64'))
     } else if (req.url === '/trackers') {
       res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' })
       res.end(`<!doctype html><title>Trackers</title>
-        <img id=ads src="http://doubleclick.net:8899/pixel.gif?a">
-        <img id=analytics src="http://b.scorecardresearch.com:8899/pixel.gif?b">
-        <img id=social src="http://platform.twitter.com:8899/pixel.gif?c">
-        <img id=plain src="http://cdn.example.test:8899/pixel.gif?d">`)
+        <img id=ads src="http://doubleclick.net:8899/assets/logo.gif?a">
+        <img id=analytics src="http://b.scorecardresearch.com:8899/assets/logo.gif?b">
+        <img id=social src="http://platform.twitter.com:8899/assets/logo.gif?c">
+        <img id=plain src="http://cdn.example.test:8899/assets/logo.gif?d">`)
     } else if (req.url === '/links') {
       res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' })
       res.end(`<!doctype html><title>Links</title><body style="margin:0;background:#fff">

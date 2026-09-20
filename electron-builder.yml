@@ -25,6 +25,10 @@ extraResources:
     to: threats.bin
   - from: build/threats.meta.json
     to: threats.meta.json
+  - from: build/filters.txt.gz
+    to: filters.txt.gz
+  - from: build/filters.meta.json
+    to: filters.meta.json
 
 # Only Chromium's own locales we ship UI for; keeps the package smaller.
 electronLanguages:

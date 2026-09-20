@@ -135,6 +135,8 @@ export class DownloadManager {
     const live: LiveDownload = { item, session: ses, started: false, lastBytes: 0, lastTime: Date.now(), lastEmit: 0 }
     this.records.set(id, record)
     this.live.set(id, live)
+    // A retry must use the session the download started in (a Tor download must never be retried directly).
+    this.sessionOfRecord.set(id, ses)
     if (savePath) this.persist(record)
     this.emit(record, true)
     this.onStarted(isPrivate)
@@ -264,11 +266,13 @@ export class DownloadManager {
       live.item.resume()
       return
     }
-    const ses = live?.session ?? this.sessionFor(record.isPrivate)
+    const ses = live?.session ?? this.sessionOfRecord.get(id) ?? (record.isPrivate ? null : this.sessionFor(false))
     if (!ses) return
     this.remove(id)
     ses.downloadURL(record.url)
   }
+
+  private readonly sessionOfRecord = new Map<string, Session>()
 
   /** Sessions currently known to the manager, used to re-issue a download after a restart. */
   private sessionProvider: (isPrivate: boolean) => Session | null = () => null
@@ -318,6 +322,7 @@ export class DownloadManager {
     if (!record) return
     this.live.get(id)?.item.cancel()
     this.records.delete(id)
+    this.sessionOfRecord.delete(id)
     if (!record.isPrivate) this.db.run('DELETE FROM downloads WHERE id = ?', id)
     this.hub.emit('downloads:remove', id, { isPrivate: record.isPrivate })
   }

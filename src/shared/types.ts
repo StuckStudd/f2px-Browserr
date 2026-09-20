@@ -1,6 +1,6 @@
 /** Data models shared by the main process, preloads and renderers. */
 
-export type SearchEngineId = 'google' | 'bing' | 'duckduckgo' | 'brave'
+export type SearchEngineId = 'duckduckgo' | 'brave' | 'startpage' | 'qwant' | 'mojeek' | 'google' | 'bing'
 export type ThemeMode = 'dark' | 'light' | 'system'
 export type AccentMode = 'white' | 'gray' | 'custom'
 export type StartupBehavior = 'home' | 'restore'
@@ -9,6 +9,13 @@ export type TrackerBlocking = 'off' | 'standard' | 'strict'
 export type SecureDnsMode = 'off' | 'automatic' | 'strict'
 export type DnsProvider = 'cloudflare' | 'quad9' | 'mullvad' | 'custom'
 export type VaultMode = 'dpapi' | 'password' | 'plain'
+/** A named bundle of privacy settings. `custom` means the current settings match none of the bundles. */
+export type PrivacyLevel = 'standard' | 'strict' | 'anonymous' | 'custom'
+export type FingerprintLevel = 'off' | 'standard' | 'strict'
+/** `public`: only the public network interface is exposed to WebRTC. `proxy-only`: no direct UDP at all. */
+export type WebRtcPolicy = 'public' | 'proxy-only'
+/** How the browser reaches the network. `tor` sends everything through a local Tor client and never falls back to a direct connection. */
+export type ProxyMode = 'system' | 'direct' | 'custom' | 'tor'
 
 export interface Settings {
   /** False until the first-run welcome wizard has been completed. */
@@ -39,6 +46,24 @@ export interface Settings {
   chromeCompat: boolean
   /** Blocks third-party requests to known ad / analytics / tracking hosts. */
   trackerBlocking: TrackerBlocking
+  /** Blocks ads and trackers with filter lists (EasyList / EasyPrivacy / uBlock filters format). */
+  adBlocking: boolean
+  /** Hides ad placeholders and banners that the filter lists describe (element hiding). */
+  cosmeticFiltering: boolean
+  /** Makes canvas / audio / WebGL / hardware / screen / time-zone fingerprints useless for cross-site tracking. */
+  fingerprintProtection: FingerprintLevel
+  /** Strips cookies from third-party requests and responses (per-site exceptions are possible). */
+  blockThirdPartyCookies: boolean
+  /** Sends no Referer header on cross-site requests. */
+  stripCrossSiteReferrer: boolean
+  webrtcPolicy: WebRtcPolicy
+  proxyMode: ProxyMode
+  /** Proxy used when `proxyMode` is `custom`: http://host:port or socks5://host:port. */
+  proxyUrl: string
+  /** Empty = detect a running Tor (Tor Browser 9150, Tor daemon 9050) or start the client at `torPath`. */
+  torProxyUrl: string
+  /** Optional path to tor.exe (Tor Expert Bundle); F2PX starts and stops it for you. */
+  torPath: string
   /** Upgrades http:// page loads to https:// and warns when a site has no secure version. */
   httpsOnly: boolean
   /** Blocks known malware / phishing sites and warns about look-alike addresses. */
@@ -71,6 +96,18 @@ export interface Settings {
 
 export type TabSecurity = 'secure' | 'insecure' | 'internal' | 'local' | 'error'
 
+/** Per-page counters of what the privacy shield did. */
+export interface PageReport {
+  trackers: number
+  ads: number
+  cookies: number
+  referrers: number
+  fingerprint: number
+  pings: number
+  threats: number
+  upgrades: number
+}
+
 export interface TabInfo {
   id: number
   url: string
@@ -85,14 +122,20 @@ export interface TabInfo {
   audible: boolean
   muted: boolean
   security: TabSecurity
-  /** Trackers blocked on the current page. */
+  /** Ads + trackers blocked on the current page. */
   blocked: number
+  /** Fingerprinting attempts neutralised on the current page. */
+  fingerprint: number
+  /** False when the user switched the shield off for this site. */
+  shieldsUp: boolean
 }
 
 export interface ShellState {
   tabs: TabInfo[]
   activeId: number | null
   isPrivate: boolean
+  /** The window sends all traffic through Tor. */
+  isTor: boolean
   isMaximized: boolean
   isFullscreen: boolean
   bookmarked: boolean
@@ -185,6 +228,58 @@ export interface OverlayMenuItem {
 
 export interface PrivacyStats {
   blockedTotal: number
+  /** Lifetime counters (survive restarts). */
+  total: PageReport
+  /** Since this run of the browser started. */
+  session: PageReport
+}
+
+export interface FilterListStatus {
+  /** Network rules that block or allow requests. */
+  networkRules: number
+  /** Element-hiding rules (selectors). */
+  cosmeticRules: number
+  ready: boolean
+  source: 'bundled' | 'updated'
+  updatedAt: string | null
+}
+
+/** What the shield knows about one site (registrable domain) — the state behind the site-info popup. */
+export interface SiteInfo {
+  /** Registrable domain the exceptions apply to. */
+  site: string
+  host: string
+  origin: string
+  shieldsUp: boolean
+  allowThirdPartyCookies: boolean
+  /** Tor windows always run the strictest shield; exceptions cannot be made there. */
+  locked: boolean
+  report: PageReport
+  permissions: SitePermission[]
+}
+
+export interface SitePermission {
+  origin: string
+  permission: string
+  decision: 'allow' | 'block'
+}
+
+export interface NetStatus {
+  mode: ProxyMode
+  /** What is actually in use right now for regular windows. */
+  route: 'direct' | 'system' | 'custom' | 'tor'
+  /** Proxy address in use (custom / Tor), empty for direct / system. */
+  proxy: string
+  tor: { reachable: boolean; managed: boolean; running: boolean; proxy: string; error: string | null }
+}
+
+export interface FireOptions {
+  tabs: boolean
+  history: boolean
+  downloads: boolean
+  cookies: boolean
+  cache: boolean
+  permissions: boolean
 }
 
 export interface ThreatListStatus {
@@ -211,6 +306,7 @@ export interface SecurityStatus {
 
 export interface AppEnv {
   isPrivate: boolean
+  isTor: boolean
   version: string
   platform: string
 }

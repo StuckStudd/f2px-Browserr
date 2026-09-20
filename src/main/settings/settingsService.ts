@@ -19,6 +19,9 @@ const str =
   (v: unknown): string | undefined =>
     typeof v === 'string' ? v.slice(0, max) : undefined
 
+/** scheme://host:port — the only shapes Chromium's proxy rules need. */
+const PROXY_URL = /^(?:https?|socks4|socks5):\/\/(?:[a-z0-9.-]{1,253}|\[[0-9a-f:]{2,45}\]):\d{1,5}$/i
+
 const VALIDATORS: Validators = {
   onboarded: bool,
   searchEngine: oneOf(...(Object.keys(SEARCH_ENGINES) as Settings['searchEngine'][])),
@@ -40,6 +43,16 @@ const VALIDATORS: Validators = {
   showBookmarksBar: bool,
   chromeCompat: bool,
   trackerBlocking: oneOf('off', 'standard', 'strict'),
+  adBlocking: bool,
+  cosmeticFiltering: bool,
+  fingerprintProtection: oneOf('off', 'standard', 'strict'),
+  blockThirdPartyCookies: bool,
+  stripCrossSiteReferrer: bool,
+  webrtcPolicy: oneOf('public', 'proxy-only'),
+  proxyMode: oneOf('system', 'direct', 'custom', 'tor'),
+  proxyUrl: (v) => (typeof v === 'string' && (v === '' || PROXY_URL.test(v)) ? v : undefined),
+  torProxyUrl: (v) => (typeof v === 'string' && (v === '' || PROXY_URL.test(v)) ? v : undefined),
+  torPath: (v) => (typeof v === 'string' && v.length <= 400 && !/["\0\r\n]/.test(v) ? v : undefined),
   httpsOnly: bool,
   threatProtection: bool,
   protectionUpdates: bool,

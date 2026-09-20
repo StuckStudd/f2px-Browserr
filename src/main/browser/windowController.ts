@@ -7,7 +7,8 @@ import type { FindState, OverlayMenuItem, ShellState } from '../../shared/types'
 import { HOME_URL, internalPageOf, resolveInput, type InternalPage } from '../../shared/url'
 import { paths } from '../paths'
 import type { AppServices } from '../services'
-import { applyChromeCompat } from './chromeCompat'
+import { policyFor, type SessionKind } from '../privacy/policy'
+import { applyEmulation } from './pageEmulation'
 import { classifyNavigation } from './externalProtocol'
 import { buildPageMenu } from './pageContextMenu'
 import type { SavedWindow } from './sessionStore'
@@ -52,12 +53,15 @@ export class WindowController implements TabHost {
   private statePending = false
   private closed = false
 
+  readonly isPrivate: boolean
+
   constructor(
     private readonly manager: WindowManager,
-    readonly isPrivate: boolean,
+    readonly kind: SessionKind,
     readonly session: Session,
     readonly services: AppServices
   ) {
+    this.isPrivate = kind !== 'normal'
     const layout = chromeLayout(services.settings.get())
     this.window = new BrowserWindow({
       width: 1320,
@@ -405,7 +409,11 @@ export class WindowController implements TabHost {
   }
 
   hardenPopup(contents: WebContents): void {
-    if (this.services.settings.get().chromeCompat) void applyChromeCompat(contents)
+    const settings = this.services.settings.get()
+    void applyEmulation(contents, { chromeCompat: settings.chromeCompat, neutralLocale: policyFor(settings, this.kind).fingerprint === 'strict' })
+    contents.setWebRTCIPHandlingPolicy(
+      policyFor(settings, this.kind).webrtc === 'proxy-only' ? 'disable_non_proxied_udp' : 'default_public_interface_only'
+    )
     contents.setWindowOpenHandler(({ url }) => {
       if (classifyNavigation(url, false) === 'allow') this.createTab({ url })
       return { action: 'deny' }
@@ -466,6 +474,21 @@ export class WindowController implements TabHost {
         break
       case 'privateWindow':
         this.manager.createWindow({ isPrivate: true })
+        break
+      case 'torWindow':
+        this.manager.createWindow({ isPrivate: true, tor: true })
+        break
+      case 'fire':
+        this.shell.webContents.focus()
+        this.services.hub.send(this.shell.webContents, 'shell:fire')
+        break
+      case 'palette':
+      case 'tabSearch':
+        this.shell.webContents.focus()
+        this.services.hub.send(this.shell.webContents, 'shell:palette', { mode: action === 'tabSearch' ? 'tabs' : 'all' })
+        break
+      case 'privacy':
+        this.openInternal('privacy')
         break
       case 'back':
         tab?.goBack()
@@ -542,6 +565,7 @@ export class WindowController implements TabHost {
       tabs: this.tabs.map((t) => t.info()),
       activeId: tab?.id ?? null,
       isPrivate: this.isPrivate,
+      isTor: this.kind === 'tor',
       isMaximized: this.window.isMaximized(),
       isFullscreen: this.window.isFullScreen(),
       bookmarked: !!url && this.services.bookmarks.findByUrl(url) !== null,
@@ -565,7 +589,7 @@ export class WindowController implements TabHost {
   /** Taskbar / Alt+Tab title: "<page> — F2PX Browser" (private windows are labelled as such). */
   private updateWindowTitle(): void {
     if (this.window.isDestroyed()) return
-    const app = this.isPrivate ? 'F2PX Private' : 'F2PX Browser'
+    const app = this.kind === 'tor' ? 'F2PX Tor' : this.isPrivate ? 'F2PX Private' : 'F2PX Browser'
     const page = this.active?.title.trim()
     const title = page ? `${page} — ${app}` : app
     if (this.window.getTitle() !== title) this.window.setTitle(title)

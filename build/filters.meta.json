@@ -1,0 +1,13 @@
+{
+  "generatedAt": "2026-09-20T10:05:51.385Z",
+  "rules": 175579,
+  "sources": {
+    "easylist": 82151,
+    "easyprivacy": 56099,
+    "ublock-filters": 3576,
+    "ublock-privacy": 1208,
+    "ublock-badware": 4256,
+    "ublock-unbreak": 2215,
+    "ru-adlist": 26074
+  }
+}

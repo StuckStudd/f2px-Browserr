@@ -17,7 +17,7 @@ function productionCsp(): Plugin {
     "default-src 'self'",
     "script-src 'self'",
     "style-src 'self' 'unsafe-inline'",
-    "img-src 'self' data: blob: http: https: f2px:",
+    "img-src 'self' data: blob: f2px:",
     "font-src 'self' data:",
     "connect-src 'self'",
     "object-src 'none'",
@@ -45,7 +45,7 @@ export default defineConfig({
     build: {
       outDir: 'out/preload',
       rollupOptions: {
-        input: { index: resolve(__dirname, 'src/preload/index.ts') },
+        input: { index: resolve(__dirname, 'src/preload/index.ts'), shield: resolve(__dirname, 'src/preload/shield.ts') },
         output: { format: 'cjs', entryFileNames: '[name].js' }
       }
     }

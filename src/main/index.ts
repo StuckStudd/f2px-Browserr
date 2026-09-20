@@ -11,7 +11,15 @@ import { EventHub } from './ipc/eventHub'
 import { createHandlers } from './ipc/handlers'
 import { registerRpc } from './ipc/rpc'
 import { paths } from './paths'
+import { FaviconService } from './network/faviconService'
+import { initNetSession, fetchText } from './network/netSession'
+import { NetworkRoute } from './network/route'
+import { TorService } from './network/torService'
+import { FilterLists } from './privacy/filterLists'
+import { isLocalHost } from './privacy/hosts'
 import { PrivacyGuard } from './privacy/privacyGuard'
+import { ShieldService } from './privacy/shield'
+import { SiteRules } from './privacy/siteRules'
 import { ThreatList } from './privacy/threatList'
 import { QuickAccessService } from './quickaccess/quickAccessService'
 import { registerSettingsEffects } from './settings/settingsEffects'
@@ -27,6 +35,24 @@ import { ensureDir } from './utils/fsUtils'
 registerInternalScheme()
 app.setAppUserModelId('com.f2px.browser')
 if (process.env['F2PX_USER_DATA']) app.setPath('userData', process.env['F2PX_USER_DATA'])
+// Chromium's own background services and ad-measurement APIs have no place in a privacy browser (most are inert in Electron already).
+app.commandLine.appendSwitch('disable-background-networking')
+app.commandLine.appendSwitch('disable-component-update')
+app.commandLine.appendSwitch('disable-domain-reliability')
+app.commandLine.appendSwitch('no-pings') // hyperlink auditing (<a ping>)
+app.commandLine.appendSwitch('disable-client-side-phishing-detection')
+app.commandLine.appendSwitch(
+  'disable-features',
+  [
+    ...app.commandLine.getSwitchValue('disable-features').split(',').filter(Boolean),
+    'BrowsingTopics',
+    'PrivacySandboxAdsAPIs',
+    'InterestFeedContentSuggestions',
+    'OptimizationHints',
+    'NetworkErrorLogging',
+    'ReportingApi'
+  ].join(',')
+)
 // Automation hook for end-to-end tests; never set in normal use.
 if (process.env['F2PX_DEBUG_PORT']) app.commandLine.appendSwitch('remote-debugging-port', process.env['F2PX_DEBUG_PORT'])
 
@@ -42,14 +68,19 @@ function urlFromArgv(argv: string[]): string | undefined {
   return argv.slice(1).find((a) => /^https?:\/\//i.test(a))
 }
 
-/** Opt-in: refresh the malware / phishing list about once a day. */
-function scheduleThreatUpdates(settings: SettingsService, threats: ThreatList): void {
+/** Opt-in: refresh the malware / phishing list and the ad / tracker filter lists about once a day. */
+function scheduleThreatUpdates(settings: SettingsService, threats: ThreatList, lists: FilterLists): void {
   const DAY = 24 * 60 * 60 * 1000
   const tick = (): void => {
     if (!settings.get().protectionUpdates) return
     const at = threats.status().updatedAt
-    if (threats.status().source === 'updated' && at && Date.now() - Date.parse(at) < DAY) return
-    threats.update().catch((error) => console.warn('[threats] update failed', error instanceof Error ? error.message : error))
+    if (!(threats.status().source === 'updated' && at && Date.now() - Date.parse(at) < DAY)) {
+      threats.update().catch((error) => console.warn('[threats] update failed', error instanceof Error ? error.message : error))
+    }
+    const listsAt = lists.status().updatedAt
+    if (!(lists.status().source === 'updated' && listsAt && Date.now() - Date.parse(listsAt) < DAY)) {
+      lists.update().catch((error) => console.warn('[filters] update failed', error instanceof Error ? error.message : error))
+    }
   }
   setTimeout(tick, 45_000).unref()
   setInterval(tick, 6 * 60 * 60 * 1000).unref()
@@ -83,6 +114,21 @@ function main(): void {
     ensureDir(paths.userData())
     ensureDir(paths.backgrounds())
 
+    // The browser's own UI lives in the default session and must never reach the internet (icons are fetched by the main
+    // process through the proper route instead). Only loopback is allowed, for the dev server.
+    session.defaultSession.webRequest.onBeforeRequest({ urls: ['http://*/*', 'https://*/*', 'ws://*/*', 'wss://*/*'] }, (details, callback) => {
+      let local = false
+      try {
+        local = isLocalHost(new URL(details.url).hostname)
+      } catch {
+        /* keep false */
+      }
+      callback({ cancel: !local })
+    })
+
+    // Parsing the filter lists takes a moment; start now so it overlaps with the password prompt and window creation.
+    const lists = new FilterLists(paths.userData(), (url) => fetchText(url))
+
     // Encrypted store (asks for the password first when one is set). Cancelled -> quit.
     const store = await openStore(paths.userData(), askPassword)
     if (!store) {
@@ -91,6 +137,9 @@ function main(): void {
     }
     const { vault, db } = store
     const settings = new SettingsService(db, paths.userData())
+    const tor = new TorService(settings, paths.userData())
+    const route = new NetworkRoute(settings, tor)
+    initNetSession(route)
     const hub = new EventHub()
     const history = new HistoryService(db)
     const bookmarks = new BookmarkService(db)
@@ -98,10 +147,16 @@ function main(): void {
     const downloads = new DownloadManager(db, settings, hub)
     const omnibox = new Omnibox(history, bookmarks, settings)
     const threats = new ThreatList(paths.userData())
-    const privacy = new PrivacyGuard(db, settings, threats)
+    const sites = new SiteRules(db)
+    const privacy = new PrivacyGuard(db, settings, threats, lists, sites)
     privacy.hasVisited = (host) => history.hasHost(host)
+    const shield = new ShieldService(privacy, (contents) => privacy.hasSession(contents.session))
+    shield.register()
+    const favicons = new FaviconService()
     const updates = new UpdateChecker(settings)
-    const services: AppServices = { db, vault, settings, history, bookmarks, quickAccess, downloads, omnibox, privacy, updates, hub }
+    const services: AppServices = {
+      db, vault, settings, history, bookmarks, quickAccess, downloads, omnibox, privacy, sites, shield, route, tor, favicons, updates, hub
+    }
 
     const sessionStore = new SessionStore(db)
     manager = new WindowManager(services, sessionStore)
@@ -111,7 +166,8 @@ function main(): void {
     downloads.onStarted = (isPrivate) => hub.emit('shell:open-downloads', undefined, { kind: 'shell', isPrivate })
     createTray(manager)
     updates.schedule()
-    scheduleThreatUpdates(settings, threats)
+    scheduleThreatUpdates(settings, threats, lists)
+    tor.onChange.on(() => hub.emit('net:changed', undefined))
 
     // "Clear on exit": remember the session first (so nothing is lost if the option is off), then wipe what the user asked for.
     let exitCleaned = false
@@ -141,6 +197,7 @@ function main(): void {
       })()
     })
     app.on('will-quit', () => {
+      tor.stop()
       privacy.flush()
       void settings.flushNow()
       db.close()

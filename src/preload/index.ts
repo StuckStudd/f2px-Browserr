@@ -20,8 +20,13 @@ const bridge = {
 }
 
 const { protocol } = (globalThis as unknown as { location: { protocol: string } }).location
+// Sub-frames also run this preload (the page shield needs that); none of them may ever receive the bridge.
+const w = globalThis as unknown as { window: object & { top: unknown } }
+const isTopFrame = w.window === w.window.top
 
-if (process.argv.includes('--f2px-unlock')) {
+if (!isTopFrame) {
+  // nothing is exposed to sub-frames
+} else if (process.argv.includes('--f2px-unlock')) {
   // Startup password window: talks to the main process through two dedicated channels only.
   if (protocol === 'f2px:') {
     contextBridge.exposeInMainWorld('f2pxUnlock', {

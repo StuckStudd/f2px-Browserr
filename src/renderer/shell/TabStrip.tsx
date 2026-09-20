@@ -10,6 +10,7 @@ interface TabStripProps {
   tabs: TabInfo[]
   activeId: number | null
   isPrivate: boolean
+  isTor?: boolean
   onTabMenu: (tab: TabInfo, x: number, y: number) => void
 }
 
@@ -23,7 +24,7 @@ function tabTitle(tab: TabInfo): string {
   return hostOf(tab.displayUrl) || tab.displayUrl || 'New tab'
 }
 
-export function TabStrip({ tabs, activeId, isPrivate, onTabMenu }: TabStripProps) {
+export function TabStrip({ tabs, activeId, isPrivate, isTor = false, onTabMenu }: TabStripProps) {
   const [dragId, setDragId] = useState<number | null>(null)
   const [drop, setDrop] = useState<number | null>(null)
   const tabsRef = useRef<HTMLDivElement>(null)
@@ -64,11 +65,18 @@ export function TabStrip({ tabs, activeId, isPrivate, onTabMenu }: TabStripProps
 
   return (
     <div className="tabstrip">
-      {isPrivate && (
-        <div className="tabstrip__private" title="Private window: history and cookies are discarded when it closes">
-          <Icon name="private" size={13} />
-          <span>PRIVATE</span>
+      {isTor ? (
+        <div className="tabstrip__private tabstrip__private--tor" title="Tor window: all traffic goes through the Tor network; nothing is kept when it closes">
+          <Icon name="onion" size={13} />
+          <span>TOR</span>
         </div>
+      ) : (
+        isPrivate && (
+          <div className="tabstrip__private" title="Private window: history and cookies are discarded when it closes">
+            <Icon name="private" size={13} />
+            <span>PRIVATE</span>
+          </div>
+        )
       )}
       <div ref={tabsRef} data-size={size} className="tabstrip__tabs" role="tablist" onDragLeave={(e) => e.currentTarget === e.target && setDrop(null)}>
         {tabs.map((tab, index) => {

@@ -1576,3 +1576,138 @@ body {
   gap: 4px;
   max-width: 520px;
 }
+
+/* ── Privacy center ────────────────────────────────────────────────────── */
+.settings--single {
+  grid-template-columns: minmax(0, 1fr);
+}
+.levels {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 4px;
+}
+.level {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+  text-align: left;
+  border: 1px solid var(--line-2);
+  background: transparent;
+  color: var(--fg);
+  transition: border-color var(--dur) var(--ease), background var(--dur) var(--ease);
+}
+.level:hover {
+  border-color: var(--line-3);
+  background: var(--hover);
+}
+.level.is-active {
+  border-color: var(--accent);
+  box-shadow: var(--glow);
+}
+.level__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--fg-strong);
+}
+.level__title {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.level__tag {
+  color: var(--fg-dim);
+}
+.level ul {
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--fg-mute);
+}
+.level li::before {
+  content: '— ';
+  color: var(--fg-faint);
+}
+.levels__custom {
+  margin: 12px 0 0;
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  color: var(--warn, #d8a44a);
+}
+@media (max-width: 900px) {
+  .levels {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.pcounters {
+  display: flex;
+  flex-direction: column;
+  margin-top: 8px;
+  border: 1px solid var(--line);
+}
+.pcounters__head,
+.pcounters__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 130px 130px;
+  align-items: baseline;
+  gap: 12px;
+  padding: 9px 14px;
+}
+.pcounters__head {
+  border-bottom: 1px solid var(--line);
+  color: var(--fg-dim);
+}
+.pcounters__head .label:not(:first-child),
+.pcounters__row .mono {
+  text-align: right;
+}
+.pcounters__row {
+  font-size: 12.5px;
+  border-bottom: 1px solid var(--line);
+}
+.pcounters__row .mono {
+  color: var(--fg-strong);
+}
+.pcounters__total {
+  color: var(--fg-dim) !important;
+}
+.pcounters__foot {
+  display: flex;
+  justify-content: flex-end;
+  padding: 8px 10px;
+}
+.pchip {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+  font-size: 12px;
+}
+.pchip .label {
+  color: var(--fg-dim);
+}
+.ssec__note {
+  margin: 14px 0 0;
+  max-width: 68ch;
+  font-size: 11.5px;
+  line-height: 1.6;
+  color: var(--fg-dim);
+}
+
+.home__protection {
+  text-decoration: none;
+  color: inherit;
+  transition: color var(--dur) var(--ease);
+}
+.home__protection:hover {
+  color: var(--fg-strong);
+}

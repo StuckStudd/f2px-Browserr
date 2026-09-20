@@ -1,0 +1,9 @@
+[
+  { "id": "easylist", "name": "EasyList", "url": "https://easylist.to/easylist/easylist.txt", "tag": 1, "license": "GPL-3.0 / CC BY-SA 3.0" },
+  { "id": "easyprivacy", "name": "EasyPrivacy", "url": "https://easylist.to/easylist/easyprivacy.txt", "tag": 2, "license": "GPL-3.0 / CC BY-SA 3.0" },
+  { "id": "ublock-filters", "name": "uBlock filters", "url": "https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/filters.txt", "tag": 1, "license": "GPL-3.0" },
+  { "id": "ublock-privacy", "name": "uBlock filters – Privacy", "url": "https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/privacy.txt", "tag": 2, "license": "GPL-3.0" },
+  { "id": "ublock-badware", "name": "uBlock filters – Badware risks", "url": "https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/badware.txt", "tag": 2, "license": "GPL-3.0" },
+  { "id": "ublock-unbreak", "name": "uBlock filters – Unbreak", "url": "https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/unbreak.txt", "tag": 0, "license": "GPL-3.0" },
+  { "id": "ru-adlist", "name": "RU AdList (RU, UA, UZ, KZ)", "url": "https://easylist-downloads.adblockplus.org/advblock.txt", "tag": 1, "license": "CC BY-SA 3.0" }
+]

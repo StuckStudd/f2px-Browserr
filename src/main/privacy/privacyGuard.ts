@@ -1,13 +1,23 @@
-import type { OnBeforeRequestListenerDetails, Session } from 'electron'
-import { isInternalUrl } from '../../shared/url'
+import type {
+  OnBeforeRequestListenerDetails,
+  OnBeforeSendHeadersListenerDetails,
+  OnHeadersReceivedListenerDetails,
+  Session
+} from 'electron'
+import type { PageReport } from '../../shared/types'
+import { hostOf, isInternalUrl } from '../../shared/url'
 import type { SettingsService } from '../settings/settingsService'
 import type { Database } from '../storage/database'
+
+import { PrivacyCounters } from './counters'
+import { typeOfResource } from './filterEngine'
+import type { FilterLists } from './filterLists'
 import { isLocalHost, isThirdParty } from './hosts'
 import { checkLookalike, type LookalikeReason } from './lookalike'
+import { policyFor, type Policy, type SessionKind } from './policy'
+import { SiteRules } from './siteRules'
 import type { ThreatList } from './threatList'
 import { STRICT_TRACKER_HOSTS, TRACKER_HOSTS, TRACKER_PATHS } from './trackerList'
-
-const STATS_KEY = 'blockedTotal'
 
 /** Query parameters that only exist to follow you from link to link. */
 const TRACKING_PARAMS = new Set([
@@ -29,63 +39,138 @@ export function stripTrackingParams(url: URL): URL | null {
 }
 const UPGRADE_TTL_MS = 120_000
 
+/** Hints a site can ask for (via Accept-CH) that describe your hardware and software in detail. */
+const HIGH_ENTROPY_HINT = /^sec-ch-ua-(?:full-version|full-version-list|platform-version|arch|bitness|model|wow64|form-factors)$|^sec-ch-(?:device-memory|dpr|viewport-width|width|prefers-|ect|downlink|rtt|save-data)/i
+
+interface PageContext {
+  /** Top-level page address ('' when unknown, e.g. service workers). */
+  pageUrl: string
+  pageHost: string
+}
+
 /**
  * Network-level privacy policy for tab sessions:
- *  - blocks third-party requests to known tracking hosts and counts them;
+ *  - blocks malware / phishing pages and sub-resources;
+ *  - blocks ads and trackers (filter lists + a built-in host list), third-party beacons and CSP reports;
+ *  - strips third-party cookies and cross-site Referer headers;
  *  - upgrades http:// page loads to https:// (unless the site is local or the user chose to continue).
+ * Per-site exceptions and Tor windows are honoured through `policyFor`.
  */
 export class PrivacyGuard {
   private readonly trackers = new Set(TRACKER_HOSTS)
   private readonly strictTrackers = new Set(STRICT_TRACKER_HOSTS)
   private readonly allowedHttpHosts = new Set<string>()
   private readonly upgrades = new Map<string, { original: string; at: number }>()
-  private readonly attached = new WeakSet<Session>()
+  private readonly attached = new WeakMap<Session, SessionKind>()
   private readonly allowedThreatHosts = new Set<string>()
   private readonly threatPages = new Map<string, { reason: string; at: number }>()
-  private blockedTotal: number
-  private dirty = false
-  /** Called for every blocked request with the id of the webContents that issued it. */
-  onBlocked: (webContentsId: number | undefined) => void = () => {}
+  readonly counters: PrivacyCounters
+  /** Called for everything the shield does, with the id of the webContents it happened in. */
+  onEvent: (kind: keyof PageReport, webContentsId: number | undefined) => void = () => {}
   /** Set by the app: has this host been visited before? */
   hasVisited: (host: string) => boolean = () => false
 
   constructor(
-    private readonly db: Database,
+    db: Database,
     private readonly settings: SettingsService,
-    readonly threats: ThreatList
+    readonly threats: ThreatList,
+    readonly lists: FilterLists,
+    readonly sites: SiteRules
   ) {
-    this.blockedTotal = db.getKv<number>(STATS_KEY) ?? 0
-    const timer = setInterval(() => this.flush(), 10_000)
-    timer.unref()
+    this.counters = new PrivacyCounters(db)
   }
 
-  stats(): { blockedTotal: number } {
-    return { blockedTotal: this.blockedTotal }
+  stats(): { blockedTotal: number; total: PageReport; session: PageReport } {
+    return { blockedTotal: this.counters.blockedTotal(), total: { ...this.counters.total }, session: { ...this.counters.session } }
   }
 
   flush(): void {
-    if (!this.dirty) return
-    this.dirty = false
-    try {
-      this.db.setKv(STATS_KEY, this.blockedTotal)
-    } catch {
-      /* the counter is cosmetic */
-    }
+    this.counters.flush()
   }
 
-  attach(ses: Session): void {
+  /** Is this one of the sessions our browser windows use? (The shell's own session is not.) */
+  hasSession(ses: Session): boolean {
+    return this.attached.has(ses)
+  }
+
+  kindOf(ses: Session): SessionKind {
+    return this.attached.get(ses) ?? 'normal'
+  }
+
+  /** Effective policy for a page on `host` in a session of `kind`, after the user's per-site exceptions. */
+  policyForPage(kind: SessionKind, host: string): Policy & { shieldsUp: boolean } {
+    const base = policyFor(this.settings.get(), kind)
+    const shieldsUp = !(base.allowExceptions && host && this.sites.shieldsOff(host))
+    if (!shieldsUp) {
+      return {
+        ...base,
+        shieldsUp,
+        trackers: 'off',
+        ads: false,
+        cosmetic: false,
+        fingerprint: 'off',
+        blockThirdPartyCookies: false,
+        stripReferrer: false
+      }
+    }
+    const cookies = base.blockThirdPartyCookies && !(base.allowExceptions && host && this.sites.cookiesAllowed(host))
+    return { ...base, shieldsUp, blockThirdPartyCookies: cookies }
+  }
+
+  attach(ses: Session, kind: SessionKind): void {
     if (this.attached.has(ses)) return
-    this.attached.add(ses)
-    ses.webRequest.onBeforeRequest({ urls: ['http://*/*', 'https://*/*'] }, (details, callback) => {
+    this.attached.set(ses, kind)
+
+    ses.webRequest.onBeforeRequest({ urls: ['http://*/*', 'https://*/*', 'ws://*/*', 'wss://*/*'] }, (details, callback) => {
+      const run = (): void => {
+        try {
+          callback(this.decide(details, kind))
+        } catch {
+          callback({})
+        }
+      }
+      // Requests wait (briefly) for the filter lists on the very first page load instead of slipping through.
+      if (this.lists.ready) run()
+      else void this.lists.whenReady().then(run)
+    })
+
+    ses.webRequest.onBeforeSendHeaders({ urls: ['http://*/*', 'https://*/*', 'ws://*/*', 'wss://*/*'] }, (details, callback) => {
       try {
-        callback(this.decide(details))
+        callback(this.rewriteRequestHeaders(details, kind))
+      } catch {
+        callback({})
+      }
+    })
+
+    ses.webRequest.onHeadersReceived({ urls: ['http://*/*', 'https://*/*'] }, (details, callback) => {
+      try {
+        callback(this.rewriteResponseHeaders(details, kind))
       } catch {
         callback({})
       }
     })
   }
 
-  private decide(details: OnBeforeRequestListenerDetails): { cancel?: boolean; redirectURL?: string } {
+  // ── page context ─────────────────────────────────────────────────────────
+  private pageOf(details: { webContents?: { getURL(): string; isDestroyed(): boolean } | null; url: string; resourceType: string }): PageContext {
+    if (details.resourceType === 'mainFrame') return { pageUrl: details.url, pageHost: hostOf(details.url) }
+    const wc = details.webContents
+    const pageUrl = wc && !wc.isDestroyed() ? wc.getURL() : ''
+    return { pageUrl, pageHost: hostOf(pageUrl) }
+  }
+
+  private event(kind: keyof PageReport, webContentsId: number | undefined): void {
+    this.counters.add(kind)
+    this.onEvent(kind, webContentsId)
+  }
+
+  /** A fingerprinting attempt neutralised by the page shield (reported by the frame preload). */
+  fingerprintBlocked(webContentsId: number | undefined): void {
+    this.event('fingerprint', webContentsId)
+  }
+
+  // ── requests ─────────────────────────────────────────────────────────────
+  private decide(details: OnBeforeRequestListenerDetails, kind: SessionKind): { cancel?: boolean; redirectURL?: string } {
     let url: URL
     try {
       url = new URL(details.url)
@@ -106,6 +191,7 @@ export class PrivacyGuard {
         }
         if (reason) {
           this.rememberThreat(url.href, reason)
+          this.event('threats', details.webContentsId)
           return { cancel: true }
         }
       }
@@ -117,6 +203,7 @@ export class PrivacyGuard {
         const secure = new URL(url.href)
         secure.protocol = 'https:'
         this.rememberUpgrade(secure.href, details.url)
+        this.event('upgrades', details.webContentsId)
         return { redirectURL: secure.href }
       }
       if (s.stripTrackingParams && details.method === 'GET' && url.search) {
@@ -128,28 +215,49 @@ export class PrivacyGuard {
 
     // Sub-resources from known malware / phishing hosts are dropped whichever site asks for them.
     if (s.threatProtection && this.threats.has(url.hostname)) {
-      this.blockedTotal++
-      this.dirty = true
-      this.onBlocked(details.webContentsId)
+      this.event('threats', details.webContentsId)
       return { cancel: true }
     }
 
-    if (s.trackerBlocking === 'off') return {}
-    const page = details.webContents?.getURL() ?? ''
-    if (!page || isInternalUrl(page)) return {}
-    let pageHost: string
-    try {
-      pageHost = new URL(page).hostname
-    } catch {
-      return {}
-    }
-    if (!isThirdParty(url.hostname, pageHost)) return {}
-    if (!this.isTracker(url, s.trackerBlocking === 'strict')) return {}
+    const page = this.pageOf(details)
+    if (!page.pageUrl || isInternalUrl(page.pageUrl) || !page.pageHost) return {}
+    const policy = this.policyForPage(kind, page.pageHost)
+    if (policy.trackers === 'off' && !policy.ads) return {}
 
-    this.blockedTotal++
-    this.dirty = true
-    this.onBlocked(details.webContentsId)
-    return { cancel: true }
+    const host = url.hostname.toLowerCase()
+    const thirdParty = isThirdParty(host, page.pageHost)
+    if (!thirdParty && !policy.ads) return {}
+
+    // A public website reaching into your own machine or home network is a known tracking / port-scanning trick.
+    if (policy.trackers === 'strict' && isLocalHost(host) && !isLocalHost(page.pageHost)) {
+      this.event('trackers', details.webContentsId)
+      return { cancel: true }
+    }
+
+    // Third-party beacons and CSP reports carry data to someone you never visited.
+    if (thirdParty && policy.trackers !== 'off' && (details.resourceType === 'ping' || details.resourceType === 'cspReport')) {
+      this.event('pings', details.webContentsId)
+      return { cancel: true }
+    }
+
+    if (policy.ads) {
+      const engine = this.lists.engine
+      const pageHost = page.pageHost.toLowerCase()
+      if (!engine.isPageAllowed(page.pageUrl, pageHost)) {
+        const verdict = engine.match({ url: details.url, host, type: typeOfResource(details.resourceType), pageHost, thirdParty })
+        if (verdict === 'block') {
+          this.event(engine.lastTag === 2 ? 'trackers' : 'ads', details.webContentsId)
+          return { cancel: true }
+        }
+        if (verdict === 'allow') return {}
+      }
+    }
+
+    if (policy.trackers !== 'off' && thirdParty && this.isTracker(url, policy.trackers === 'strict')) {
+      this.event('trackers', details.webContentsId)
+      return { cancel: true }
+    }
+    return {}
   }
 
   private isTracker(url: URL, strict: boolean): boolean {
@@ -159,6 +267,91 @@ export class PrivacyGuard {
       if (this.trackers.has(h) || (strict && this.strictTrackers.has(h))) return true
     }
     return TRACKER_PATHS.some((r) => r.host === host && url.pathname.startsWith(r.prefix))
+  }
+
+  // ── headers ──────────────────────────────────────────────────────────────
+  private rewriteRequestHeaders(details: OnBeforeSendHeadersListenerDetails, kind: SessionKind): { requestHeaders?: Record<string, string | string[]> } {
+    const page = this.pageOf(details)
+    // Our own pages and requests without a page (workers, favicon fetches) are left alone.
+    if (isInternalUrl(page.pageUrl) || isInternalUrl(details.url)) return {}
+    const policy = this.policyForPage(kind, page.pageHost)
+    const headers: Record<string, string | string[]> = { ...details.requestHeaders }
+    let changed = false
+    const drop = (name: string): boolean => {
+      for (const key of Object.keys(headers)) {
+        if (key.toLowerCase() === name.toLowerCase()) {
+          delete headers[key]
+          changed = true
+          return true
+        }
+      }
+      return false
+    }
+
+    if (policy.sendDnt) {
+      headers['DNT'] = '1'
+      headers['Sec-GPC'] = '1'
+      changed = true
+    }
+
+    let host = ''
+    try {
+      host = new URL(details.url).hostname
+    } catch {
+      /* keep empty */
+    }
+    const crossSite = details.resourceType !== 'mainFrame' && !!page.pageHost && !!host && isThirdParty(host, page.pageHost)
+
+    if (policy.blockThirdPartyCookies && crossSite && drop('Cookie')) this.event('cookies', details.webContentsId)
+
+    if (policy.stripReferrer) {
+      const referrer = details.referrer || (headers['Referer'] as string | undefined) || ''
+      const source = hostOf(referrer)
+      if (referrer && host && source && isThirdParty(host, source)) {
+        if (drop('Referer')) this.event('referrers', details.webContentsId)
+      }
+    }
+
+    if (policy.fingerprint === 'strict') {
+      for (const key of Object.keys(headers)) {
+        if (HIGH_ENTROPY_HINT.test(key)) {
+          delete headers[key]
+          changed = true
+        }
+      }
+    }
+    return changed ? { requestHeaders: headers } : {}
+  }
+
+  private rewriteResponseHeaders(
+    details: OnHeadersReceivedListenerDetails,
+    kind: SessionKind
+  ): { responseHeaders?: Record<string, string[]> } {
+    const page = this.pageOf(details)
+    if (isInternalUrl(page.pageUrl) || isInternalUrl(details.url) || !details.responseHeaders) return {}
+    const policy = this.policyForPage(kind, page.pageHost)
+    let host = ''
+    try {
+      host = new URL(details.url).hostname
+    } catch {
+      /* keep empty */
+    }
+    const crossSite = details.resourceType !== 'mainFrame' && !!page.pageHost && !!host && isThirdParty(host, page.pageHost)
+    const headers: Record<string, string[]> = { ...details.responseHeaders }
+    let changed = false
+    for (const key of Object.keys(headers)) {
+      const lower = key.toLowerCase()
+      if (policy.blockThirdPartyCookies && crossSite && lower === 'set-cookie') {
+        delete headers[key]
+        changed = true
+        this.event('cookies', details.webContentsId)
+      } else if (policy.fingerprint === 'strict' && (lower === 'accept-ch' || lower === 'critical-ch')) {
+        // Without these a site never learns more than the basic, low-entropy hints.
+        delete headers[key]
+        changed = true
+      }
+    }
+    return changed ? { responseHeaders: headers } : {}
   }
 
   // ── HTTPS-only bookkeeping ─────────────────────────────────────────────

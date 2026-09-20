@@ -9,7 +9,10 @@ import { call, fire, subscribe } from '@renderer/lib/api'
 import { BookmarkPopup } from './BookmarkPopup'
 import { BookmarksBar } from './BookmarksBar'
 import { DownloadsPopup } from './DownloadsPopup'
+import { CommandPalette } from './CommandPalette'
 import { FindBar } from './FindBar'
+import { FirePopup } from './FirePopup'
+import { ShieldPopup } from './ShieldPopup'
 import { TabStrip } from './TabStrip'
 import { Toolbar } from './Toolbar'
 import type { OmniboxHandle } from './Omnibox'
@@ -17,6 +20,9 @@ import { useShellState } from './useShellState'
 
 type Popup =
   | { type: 'downloads' }
+  | { type: 'shield' }
+  | { type: 'fire' }
+  | { type: 'palette'; mode: 'all' | 'tabs' }
   | { type: 'bookmark'; bookmark: Bookmark; right: number }
   | {
       type: 'menu'
@@ -32,7 +38,11 @@ const MAIN_MENU: OverlayMenuItem[] = [
   { id: 'newTab', label: 'New tab', shortcut: 'Ctrl+T' },
   { id: 'newWindow', label: 'New window', shortcut: 'Ctrl+N' },
   { id: 'private', label: 'New private window', shortcut: 'Ctrl+Shift+N' },
+  { id: 'tor', label: 'New Tor window', shortcut: 'Ctrl+Shift+Alt+N' },
   { id: 's1', label: '', separator: true },
+  { id: 'palette', label: 'Command palette…', shortcut: 'Ctrl+Shift+K' },
+  { id: 'privacy', label: 'Privacy center', shortcut: 'Ctrl+Shift+P' },
+  { id: 'fire', label: 'Fire — clear everything…', shortcut: 'Ctrl+Shift+Del' },
   { id: 'bookmarks', label: 'Bookmarks', shortcut: 'Ctrl+Shift+O' },
   { id: 'history', label: 'History', shortcut: 'Ctrl+H' },
   { id: 'downloads', label: 'Downloads', shortcut: 'Ctrl+J' },
@@ -41,6 +51,8 @@ const MAIN_MENU: OverlayMenuItem[] = [
   { id: 'zoomOut', label: 'Zoom out', shortcut: 'Ctrl+−' },
   { id: 'find', label: 'Find in page', shortcut: 'Ctrl+F' },
   { id: 'print', label: 'Print…', shortcut: 'Ctrl+P' },
+  { id: 'pdf', label: 'Save as PDF…' },
+  { id: 'screenshot', label: 'Screenshot…' },
   { id: 'fullscreen', label: 'Full screen', shortcut: 'F11' },
   { id: 'devtools', label: 'Developer tools', shortcut: 'F12' },
   { id: 's3', label: '', separator: true },
@@ -150,6 +162,8 @@ export function ShellApp() {
       ),
       subscribe('shell:bookmark-popup', () => void openBookmarkPopup()),
       subscribe('shell:find', openFind),
+      subscribe('shell:fire', () => setPopup((current) => (current?.type === 'fire' ? null : { type: 'fire' }))),
+      subscribe('shell:palette', ({ mode }) => setPopup((current) => (current?.type === 'palette' && current.mode === mode ? null : { type: 'palette', mode }))),
       subscribe('shell:open-downloads', () => {
         setDownloadsFlash(true)
         window.setTimeout(() => setDownloadsFlash(false), 1800)
@@ -169,6 +183,9 @@ export function ShellApp() {
         newTab: () => fire('tabs.create'),
         newWindow: () => fire('ui.newWindow', false),
         private: () => fire('ui.newWindow', true),
+        tor: () => fire('ui.newTorWindow'),
+        privacy: () => fire('ui.openPage', 'privacy'),
+        fire: () => setPopup({ type: 'fire' }),
         bookmarks: () => fire('ui.openPage', 'bookmarks'),
         history: () => fire('ui.openPage', 'history'),
         downloads: () => fire('ui.openPage', 'downloads'),
@@ -176,6 +193,9 @@ export function ShellApp() {
         zoomOut: () => fire('ui.zoom', 'out'),
         find: openFind,
         print: () => fire('ui.print'),
+        pdf: () => fire('ui.savePdf'),
+        screenshot: () => fire('ui.screenshot'),
+        palette: () => setPopup({ type: 'palette', mode: 'all' }),
         fullscreen: () => fire('ui.fullscreen'),
         devtools: () => fire('ui.devtools'),
         bookmarksBar: () => updateSettings({ showBookmarksBar: !settings?.showBookmarksBar }),
@@ -251,9 +271,9 @@ export function ShellApp() {
   if (!state) return <div className="shell" />
 
   return (
-    <div className={`shell ${state.isPrivate ? 'is-private' : ''}`}>
+    <div className={`shell ${state.isPrivate ? 'is-private' : ''} ${state.isTor ? 'is-tor' : ''}`}>
       <div className="chrome">
-        <TabStrip tabs={state.tabs} activeId={state.activeId} isPrivate={state.isPrivate} onTabMenu={openTabMenu} />
+        <TabStrip tabs={state.tabs} activeId={state.activeId} isPrivate={state.isPrivate} isTor={state.isTor} onTabMenu={openTabMenu} />
         <Toolbar
           state={state}
           tab={activeTab}
@@ -261,6 +281,10 @@ export function ShellApp() {
           downloadsFlash={downloadsFlash}
           downloadsOpen={popup?.type === 'downloads'}
           menuOpen={popup?.type === 'menu'}
+          fireOpen={popup?.type === 'fire'}
+          shieldOpen={popup?.type === 'shield'}
+          onToggleFire={() => (popup?.type === 'fire' ? closePopup() : setPopup({ type: 'fire' }))}
+          onToggleShield={() => (popup?.type === 'shield' ? closePopup() : setPopup({ type: 'shield' }))}
           omniboxRef={omniRef}
           onOmniboxOpen={setOmniboxOpen}
           onStar={() => void openBookmarkPopup()}
@@ -282,6 +306,19 @@ export function ShellApp() {
       </div>
 
       {popup?.type === 'downloads' && <DownloadsPopup downloads={downloads} onClose={closePopup} />}
+      {popup?.type === 'shield' && <ShieldPopup blockThirdPartyCookies={!!settings?.blockThirdPartyCookies} onClose={closePopup} />}
+      {popup?.type === 'fire' && <FirePopup onClose={closePopup} />}
+      {popup?.type === 'palette' && (
+        <CommandPalette
+          mode={popup.mode}
+          state={state}
+          tab={activeTab}
+          settings={settings}
+          onClose={closePopup}
+          onFind={openFind}
+          onFire={() => setPopup({ type: 'fire' })}
+        />
+      )}
       {popup?.type === 'bookmark' && (
         <div className="popup-anchor" style={{ right: popup.right, top: toolbarBottom() + 2 }}>
           <BookmarkPopup bookmark={popup.bookmark} all={bookmarks.items} onClose={closePopup} />

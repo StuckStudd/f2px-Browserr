@@ -1,4 +1,4 @@
-import { net } from 'electron'
+import type { Session } from 'electron'
 import { SEARCH_ENGINES } from '../../shared/settings'
 import type { Suggestion } from '../../shared/types'
 import { resolveInput } from '../../shared/url'
@@ -56,13 +56,13 @@ export class Omnibox {
   }
 
   /** Suggestions from the chosen search engine. Only sent when the user has this enabled. */
-  async remote(query: string): Promise<string[]> {
+  async remote(query: string, ses: Session | null): Promise<string[]> {
     const text = query.trim()
     const settings = this.settings.get()
-    if (!settings.searchSuggestions || text.length < 2 || text.length > 100) return []
+    if (!ses || !settings.searchSuggestions || text.length < 2 || text.length > 100) return []
     try {
       const url = SEARCH_ENGINES[settings.searchEngine].suggestUrl.replace('%s', encodeURIComponent(text))
-      const response = await net.fetch(url, { credentials: 'omit', signal: AbortSignal.timeout(2500) })
+      const response = await ses.fetch(url, { credentials: 'omit', signal: AbortSignal.timeout(2500) })
       if (!response.ok) return []
       const data: unknown = await response.json()
       const list = Array.isArray(data) ? data[1] : null

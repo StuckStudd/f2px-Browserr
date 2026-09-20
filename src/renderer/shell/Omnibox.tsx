@@ -13,8 +13,11 @@ interface OmniboxProps {
   tab: TabInfo | null
   bookmarked: boolean
   zoomPercent: number
-  /** Trackers blocked on the current page. */
+  /** Ads, trackers and fingerprinting attempts dealt with on the current page. */
   blocked: number
+  shieldsUp: boolean
+  shieldOpen: boolean
+  onShield: () => void
   onOpenChange: (open: boolean) => void
   onStar: () => void
 }
@@ -48,7 +51,7 @@ function DisplayUrl({ url }: { url: string }) {
 }
 
 export const Omnibox = forwardRef<OmniboxHandle, OmniboxProps>(function Omnibox(
-  { tab, bookmarked, zoomPercent, blocked, onOpenChange, onStar },
+  { tab, bookmarked, zoomPercent, blocked, shieldsUp, shieldOpen, onShield, onOpenChange, onStar },
   ref
 ) {
   const inputRef = useRef<HTMLInputElement>(null)
@@ -209,16 +212,17 @@ export const Omnibox = forwardRef<OmniboxHandle, OmniboxProps>(function Omnibox(
         />
       </div>
 
-      {blocked > 0 && (
+      {tab && tab.url.startsWith('http') && (
         <button
           type="button"
-          className="omni__shield"
-          title={`${blocked} tracker${blocked === 1 ? '' : 's'} blocked on this page`}
-          aria-label={`${blocked} trackers blocked`}
-          onClick={() => fire('ui.openPage', 'settings')}
+          className={`omni__shield ${shieldsUp ? '' : 'is-off'} ${shieldOpen ? 'is-active' : ''}`}
+          title={shieldsUp ? (blocked > 0 ? `${blocked} blocked or neutralised on this page — click for details` : 'Shield is on for this site') : 'Shield is off for this site'}
+          aria-label="Shield for this site"
+          data-popup-trigger
+          onClick={onShield}
         >
-          <Icon name="shield" size={13} />
-          <span>{blocked}</span>
+          <Icon name={shieldsUp ? 'shield' : 'shieldOff'} size={13} />
+          {shieldsUp && blocked > 0 && <span>{blocked}</span>}
         </button>
       )}
       {zoomPercent !== 100 && (

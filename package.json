@@ -5,6 +5,25 @@
   "description": "F2PX Browser — minimal futuristic web browser for Windows",
   "author": "F2PX",
   "license": "MIT",
+  "homepage": "https://github.com/StuckStudd/f2px-Browserr#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/StuckStudd/f2px-Browserr.git"
+  },
+  "bugs": {
+    "url": "https://github.com/StuckStudd/f2px-Browserr/issues"
+  },
+  "keywords": [
+    "browser",
+    "privacy",
+    "anonymity",
+    "tor",
+    "electron",
+    "chromium",
+    "ad-blocker",
+    "anti-fingerprinting",
+    "windows"
+  ],
   "f2px": {
     "updateFeed": ""
   },
@@ -18,14 +37,16 @@
     "icons": "node scripts/run.cjs electron scripts/generate-icons.cjs",
     "dist": "npm run build && electron-builder --win --x64",
     "dist:dir": "npm run build && electron-builder --win --x64 --dir",
-    "test:unit": "node tests/unit.mjs",
+    "test:unit": "node tests/unit.mjs && node tests/unit-privacy.mjs",
     "test:e2e": "node tests/e2e/run.mjs",
     "test": "npm run typecheck && npm run test:unit",
     "test:packaged": "node tests/packaged-smoke.mjs",
     "site:shots": "node scripts/capture-site-screenshots.mjs",
     "site:prepare": "node scripts/prepare-site.cjs",
     "site:serve": "node scripts/serve-site.cjs",
-    "test:site": "node tests/site-smoke.mjs"
+    "test:site": "node tests/site-smoke.mjs",
+    "filters:update": "node scripts/update-filter-lists.cjs",
+    "threats:update": "node scripts/update-threat-list.cjs"
   },
   "dependencies": {},
   "devDependencies": {

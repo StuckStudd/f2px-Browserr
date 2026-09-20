@@ -687,3 +687,225 @@ body {
 .popup .input {
   font-family: var(--font-ui);
 }
+
+/* ── shield & fire popups ──────────────────────────────────────────────── */
+:root {
+  --tor: #b98cf5;
+}
+.tabstrip__private--tor {
+  color: var(--tor);
+  border-color: color-mix(in srgb, var(--tor) 50%, transparent);
+}
+.shell.is-tor .tab.is-active::before {
+  background: var(--tor);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--tor) 45%, transparent);
+}
+.omni__shield.is-off {
+  color: var(--fg-dim);
+  border-color: var(--line);
+}
+.omni__shield.is-active {
+  border-color: var(--line-3);
+  color: var(--fg-strong);
+}
+.popup--shield,
+.popup--fire {
+  top: calc(var(--tabs-h) + var(--toolbar-h) + 2px);
+  right: 52px;
+  width: 360px;
+  max-height: min(78vh, 620px);
+}
+.popup--shield .popup__body,
+.popup--fire .popup__body {
+  overflow-y: auto;
+}
+.popup__hint {
+  font-size: 10px;
+  color: var(--fg-dim);
+}
+.shield__badge {
+  padding: 1px 6px;
+  border: 1px solid var(--line-2);
+  font-size: 9.5px;
+  letter-spacing: 0.14em;
+}
+.shield__badge.is-up {
+  color: var(--ok);
+  border-color: color-mix(in srgb, var(--ok) 40%, transparent);
+}
+.shield__badge.is-down {
+  color: var(--danger);
+  border-color: color-mix(in srgb, var(--danger) 45%, transparent);
+}
+.shield__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+.shield__label {
+  font-size: 12.5px;
+  color: var(--fg-strong);
+}
+.shield__hint,
+.shield__note {
+  margin: 2px 0 0;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--fg-dim);
+}
+.shield__stats {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--line);
+}
+.shield__stat {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 10px;
+  font-size: 11.5px;
+  color: var(--fg-dim);
+  border-bottom: 1px solid var(--line);
+}
+.shield__stat:last-of-type {
+  border-bottom: 0;
+}
+.shield__stat.has-value {
+  color: var(--fg);
+}
+.shield__stat.has-value .mono {
+  color: var(--fg-strong);
+}
+.shield__quiet {
+  padding: 8px 10px;
+  font-size: 11px;
+  color: var(--fg-dim);
+  border-top: 1px solid var(--line);
+}
+.shield__perms {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.shield__perm {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 12px;
+}
+.fire__options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.fire__label {
+  display: block;
+  color: var(--fg-strong);
+}
+.fire__hint {
+  display: block;
+  font-size: 10.5px;
+  color: var(--fg-dim);
+}
+
+/* ── command palette ───────────────────────────────────────────────────── */
+.palette {
+  position: fixed;
+  z-index: 60;
+  top: calc(var(--tabs-h) + var(--toolbar-h) + 14px);
+  left: 50%;
+  display: flex;
+  flex-direction: column;
+  width: min(640px, calc(100vw - 32px));
+  max-height: min(72vh, 560px);
+  transform: translateX(-50%);
+  background: var(--bg-1);
+  border: 1px solid var(--line-2);
+  box-shadow: var(--shadow);
+  animation: menu-in 140ms var(--ease);
+}
+.palette__field {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px;
+  height: 46px;
+  border-bottom: 1px solid var(--line);
+  color: var(--fg-mute);
+}
+.palette__input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  background: transparent;
+  border: 0;
+  outline: 0;
+  font-family: var(--font-ui);
+  font-size: 14px;
+  color: var(--fg-strong);
+}
+.palette__hint {
+  font-size: 9.5px;
+  letter-spacing: 0.14em;
+  color: var(--fg-dim);
+}
+.palette__list {
+  margin: 0;
+  padding: 4px 0;
+  list-style: none;
+  overflow-y: auto;
+}
+.palette__item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 34px;
+  padding: 0 14px;
+  font-size: 13px;
+  color: var(--fg);
+  cursor: default;
+}
+.palette__item.is-active {
+  background: var(--hover);
+  color: var(--fg-strong);
+}
+.palette__icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 16px;
+  color: var(--fg-mute);
+}
+.palette__title {
+  flex: none;
+  max-width: 55%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.palette__detail {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--fg-dim);
+}
+.palette__kind {
+  flex: none;
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--fg-faint);
+}
+.palette__empty {
+  padding: 16px 14px;
+  font-size: 12px;
+  color: var(--fg-dim);
+}

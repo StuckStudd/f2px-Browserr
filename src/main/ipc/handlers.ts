@@ -2,19 +2,23 @@ import { copyFile, mkdir, readFile, stat, unlink, writeFile } from 'node:fs/prom
 import path from 'node:path'
 import { app, dialog, session } from 'electron'
 import { HOME_URL, isWebUrl, resolveInput } from '../../shared/url'
-import type { Bookmark, ClearDataOptions } from '../../shared/types'
+import { PRIVACY_LEVELS } from '../../shared/privacy'
+import type { Bookmark, ClearDataOptions, FireOptions, NetStatus, SiteInfo } from '../../shared/types'
 import { trustCertificateHost } from '../browser/sessionSetup'
 import { NORMAL_PARTITION, type WindowManager } from '../browser/windowManager'
 import { paths } from '../paths'
+import { SiteRules } from '../privacy/siteRules'
+import { registrableDomain } from '../privacy/hosts'
+import { privacyLevelPatch } from '../../shared/privacy'
 import type { AppServices } from '../services'
-import { ensureDir } from '../utils/fsUtils'
+import { ensureDir, sanitizeFilename } from '../utils/fsUtils'
 import type { RpcContext, RpcTable } from './rpc'
 
 const MAX_BACKGROUND_BYTES = 25 * 1024 * 1024
 const MAX_IMPORT_BYTES = 30 * 1024 * 1024
 
 export function createHandlers(services: AppServices, manager: WindowManager): RpcTable {
-  const { settings, history, bookmarks, quickAccess, downloads, omnibox, privacy, vault, updates } = services
+  const { settings, history, bookmarks, quickAccess, downloads, omnibox, privacy, vault, updates, sites, route, tor, favicons } = services
   const securityStatus = (): { encrypted: boolean; mode: typeof vault.mode } => ({ encrypted: vault.encrypted, mode: vault.mode })
 
   /** Only http(s) addresses or built-in pages may be opened programmatically. */
@@ -22,6 +26,27 @@ export function createHandlers(services: AppServices, manager: WindowManager): R
     (input ? resolveInput(input, settings.get().searchEngine)?.url : undefined) ?? HOME_URL
 
   const activeTab = (c: RpcContext) => c.controller.activeTab
+
+  const netStatus = async (): Promise<NetStatus> => ({ ...route.status(), tor: await tor.status() })
+
+  /** What the shield knows about the active tab's site (the shield popup). */
+  const siteInfo = (c: RpcContext): SiteInfo | null => {
+    const tab = activeTab(c)
+    const url = tab?.currentUrl ?? ''
+    if (!tab || !isWebUrl(url)) return null
+    const u = new URL(url)
+    const policy = privacy.policyForPage(c.controller.kind, u.hostname)
+    return {
+      site: SiteRules.siteOf(u.hostname),
+      host: u.hostname,
+      origin: u.origin,
+      shieldsUp: policy.shieldsUp,
+      allowThirdPartyCookies: sites.cookiesAllowed(u.hostname),
+      locked: c.controller.kind === 'tor',
+      report: { ...tab.report },
+      permissions: sites.listPermissions((origin) => origin === u.origin)
+    }
+  }
 
   async function clearData(options: ClearDataOptions): Promise<void> {
     if (options.history) history.clear()
@@ -84,13 +109,49 @@ export function createHandlers(services: AppServices, manager: WindowManager): R
     'nav.stop': { scope: 'shell', run: (c) => activeTab(c)?.stop() },
     'nav.home': { scope: 'shell', run: (c) => activeTab(c)?.load(c.controller.homeUrl()) },
     'omnibox.suggest': { scope: 'both', run: (_c, query) => omnibox.suggest(String(query ?? '')) },
-    'omnibox.remote': { scope: 'both', run: (_c, query) => omnibox.remote(String(query ?? '')) },
+    // Search suggestions go through the window's own route; Tor windows never send what you type anywhere.
+    'omnibox.remote': {
+      scope: 'both',
+      run: (c, query) => omnibox.remote(String(query ?? ''), c.controller.kind === 'tor' ? null : c.controller.session)
+    },
     'ui.overlay': { scope: 'shell', run: (c, open) => c.controller.setOverlay(!!open) },
     'ui.menuSelect': { scope: 'shell', run: (c, menuId, itemId) => c.controller.menuSelected(menuId, itemId) },
     'ui.openPage': { scope: 'shell', run: (c, page) => c.controller.openInternal(page) },
     'ui.newWindow': { scope: 'shell', run: (_c, isPrivate) => void manager.createWindow({ isPrivate: !!isPrivate }) },
+    'ui.newTorWindow': { scope: 'shell', run: () => void manager.createWindow({ isPrivate: true, tor: true }) },
     'ui.focusPage': { scope: 'shell', run: (c) => activeTab(c)?.contents.focus() },
     'ui.print': { scope: 'shell', run: (c) => activeTab(c)?.contents.print() },
+    'ui.savePdf': {
+      scope: 'shell',
+      run: async (c) => {
+        const tab = activeTab(c)
+        if (!tab || tab.contents.isDestroyed()) return false
+        const result = await dialog.showSaveDialog(c.controller.window, {
+          title: 'Save page as PDF',
+          defaultPath: path.join(app.getPath('documents'), `${sanitizeFilename(tab.title || 'page')}.pdf`),
+          filters: [{ name: 'PDF', extensions: ['pdf'] }]
+        })
+        if (result.canceled || !result.filePath) return false
+        await writeFile(result.filePath, await tab.contents.printToPDF({ printBackground: true }))
+        return true
+      }
+    },
+    'ui.screenshot': {
+      scope: 'shell',
+      run: async (c) => {
+        const tab = activeTab(c)
+        if (!tab || tab.contents.isDestroyed()) return false
+        const image = await tab.contents.capturePage()
+        const result = await dialog.showSaveDialog(c.controller.window, {
+          title: 'Save screenshot',
+          defaultPath: path.join(app.getPath('pictures'), `${sanitizeFilename(tab.title || 'screenshot')}.png`),
+          filters: [{ name: 'PNG image', extensions: ['png'] }]
+        })
+        if (result.canceled || !result.filePath) return false
+        await writeFile(result.filePath, image.toPNG())
+        return true
+      }
+    },
     'ui.devtools': { scope: 'shell', run: (c) => c.controller.toggleDevTools() },
     'ui.fullscreen': { scope: 'shell', run: (c) => c.controller.runShortcut('fullscreen') },
     'ui.zoom': { scope: 'shell', run: (c, dir) => activeTab(c)?.stepZoom(dir) },
@@ -146,6 +207,96 @@ export function createHandlers(services: AppServices, manager: WindowManager): R
     'update.status': { scope: 'page', run: () => updates.status() },
     'update.check': { scope: 'page', run: () => updates.check() },
     'privacy.stats': { scope: 'page', run: () => privacy.stats() },
+    'privacy.resetStats': { scope: 'page', run: () => privacy.counters.reset() },
+    'privacy.applyLevel': {
+      scope: 'both',
+      run: (_c, level) => {
+        if (!PRIVACY_LEVELS.includes(level)) throw new Error('Unknown privacy level')
+        return settings.update(privacyLevelPatch(settings.get(), level))
+      }
+    },
+    'filters.status': { scope: 'page', run: () => privacy.lists.status() },
+    'filters.update': { scope: 'page', run: () => privacy.lists.update() },
+    'net.status': { scope: 'both', run: () => netStatus() },
+    'net.refresh': {
+      scope: 'both',
+      run: async () => {
+        await tor.refresh()
+        await route.applyAll()
+        return netStatus()
+      }
+    },
+    'favicons.data': { scope: 'both', run: (c, url) => favicons.data(c.controller.session, c.controller.kind, String(url ?? '')) },
+    'site.info': { scope: 'shell', run: (c) => siteInfo(c) },
+    'site.setShields': {
+      scope: 'shell',
+      run: (c, on) => {
+        const info = siteInfo(c)
+        if (!info || info.locked) return info
+        sites.setShields(info.host, !!on)
+        activeTab(c)?.reload(false)
+        return siteInfo(c)
+      }
+    },
+    'site.setCookies': {
+      scope: 'shell',
+      run: (c, allow) => {
+        const info = siteInfo(c)
+        if (!info || info.locked) return info
+        sites.setCookiesAllowed(info.host, !!allow)
+        activeTab(c)?.reload(false)
+        return siteInfo(c)
+      }
+    },
+    'site.setPermission': {
+      scope: 'shell',
+      run: (c, origin, permission, decision) => {
+        const info = siteInfo(c)
+        if (!info || String(origin) !== info.origin) return info
+        if (decision === null) sites.resetPermission(info.origin, String(permission))
+        else if (decision === 'allow' || decision === 'block') sites.setPermission(info.origin, String(permission), decision, c.controller.kind === 'normal')
+        return siteInfo(c)
+      }
+    },
+    'site.clearData': {
+      scope: 'shell',
+      run: async (c) => {
+        const info = siteInfo(c)
+        if (!info) return
+        const ses = c.controller.session
+        await ses.clearStorageData({ origin: info.origin })
+        // cookies of the whole site (they may belong to a parent domain such as .example.com)
+        const site = registrableDomain(info.host.replace(/^www\./, ''))
+        for (const cookie of await ses.cookies.get({})) {
+          const domain = (cookie.domain ?? '').replace(/^\./, '')
+          if (domain === site || domain.endsWith(`.${site}`)) {
+            const scheme = cookie.secure ? 'https' : 'http'
+            await ses.cookies.remove(`${scheme}://${domain}${cookie.path ?? '/'}`, cookie.name).catch(() => undefined)
+          }
+        }
+        activeTab(c)?.reload(true)
+      }
+    },
+    'permissions.list': { scope: 'page', run: () => sites.listPermissions() },
+    'permissions.reset': {
+      scope: 'page',
+      run: (_c, origin, permission) => {
+        if (origin) sites.resetPermission(String(origin), permission ? String(permission) : undefined)
+        else sites.clear({ permissions: true, exceptions: false })
+      }
+    },
+    'siteRules.list': { scope: 'page', run: () => sites.exceptions() },
+    'siteRules.reset': { scope: 'page', run: () => sites.clear({ permissions: false, exceptions: true }) },
+    'privacy.fire': {
+      scope: 'both',
+      run: (c, options) => {
+        const o = (options ?? {}) as Partial<FireOptions>
+        return manager.fire(
+          { tabs: !!o.tabs, history: !!o.history, downloads: !!o.downloads, cookies: !!o.cookies, cache: !!o.cache, permissions: !!o.permissions },
+          c.controller
+        )
+      }
+    },
     'favicons.forHosts': { scope: 'page', run: (_c, hosts) => history.faviconsForHosts(Array.isArray(hosts) ? hosts.map(String) : []) },
     'downloads.list': { scope: 'both', run: (c) => downloads.list(c.controller.isPrivate) },
     'downloads.pause': { scope: 'both', run: (_c, id) => downloads.pause(id) },
@@ -160,7 +311,7 @@ export function createHandlers(services: AppServices, manager: WindowManager): R
     // ── internal pages ───────────────────────────────────────────────────
     'page.env': {
       scope: 'page',
-      run: (c) => ({ isPrivate: c.controller.isPrivate, version: app.getVersion(), platform: process.platform })
+      run: (c) => ({ isPrivate: c.controller.isPrivate, isTor: c.controller.kind === 'tor', version: app.getVersion(), platform: process.platform })
     },
     'page.navigate': { scope: 'page', run: (c, input, opts) => c.controller.navigateTab(c.sender, String(input), opts?.newTab) },
     'page.allowThreat': { scope: 'page', run: (_c, url) => privacy.allowThreat(String(url)) },
@@ -177,6 +328,23 @@ export function createHandlers(services: AppServices, manager: WindowManager): R
         const folder = result.canceled ? null : (result.filePaths[0] ?? null)
         if (folder) settings.update({ downloadPath: folder, downloadMode: 'custom' })
         return folder
+      }
+    },
+    'settings.pickTorPath': {
+      scope: 'page',
+      run: async (c) => {
+        const result = await dialog.showOpenDialog(c.controller.window, {
+          title: 'Choose tor.exe (Tor Expert Bundle)',
+          properties: ['openFile'],
+          filters: [{ name: 'Tor', extensions: ['exe'] }]
+        })
+        const file = result.canceled ? null : (result.filePaths[0] ?? null)
+        if (file && /(^|[\\/])tor\.exe$/i.test(file)) {
+          settings.update({ torPath: file })
+          return file
+        }
+        if (file) throw new Error('That file is not tor.exe')
+        return null
       }
     },
     'settings.pickBackground': {

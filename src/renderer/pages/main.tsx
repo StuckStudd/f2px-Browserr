@@ -12,6 +12,7 @@ import { DownloadsPage } from './DownloadsPage'
 import { ErrorPage } from './ErrorPage'
 import { HistoryPage } from './HistoryPage'
 import { HomePage } from './home/HomePage'
+import { PrivacyPage } from './PrivacyPage'
 import { SettingsPage } from './SettingsPage'
 import { UnlockPage } from './UnlockPage'
 import { WelcomePage } from './WelcomePage'
@@ -22,6 +23,7 @@ const TITLES = {
   downloads: 'Downloads',
   bookmarks: 'Bookmarks',
   settings: 'Settings',
+  privacy: 'Privacy center',
   error: 'Page unavailable',
   welcome: 'Welcome to F2PX',
   unlock: 'F2PX is locked'
@@ -45,6 +47,8 @@ function App({ page }: { page: keyof typeof TITLES }) {
       return <BookmarksPage />
     case 'settings':
       return <SettingsPage settings={settings} update={update} />
+    case 'privacy':
+      return <PrivacyPage settings={settings} update={update} />
     case 'welcome':
       return <WelcomePage settings={settings} update={update} />
     default:

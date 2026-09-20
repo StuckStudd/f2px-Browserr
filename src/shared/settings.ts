@@ -20,6 +20,16 @@ export const DEFAULT_SETTINGS: Settings = {
   showBookmarksBar: false,
   chromeCompat: true,
   trackerBlocking: 'standard',
+  adBlocking: true,
+  cosmeticFiltering: true,
+  fingerprintProtection: 'standard',
+  blockThirdPartyCookies: false,
+  stripCrossSiteReferrer: false,
+  webrtcPolicy: 'public',
+  proxyMode: 'system',
+  proxyUrl: '',
+  torProxyUrl: '',
+  torPath: '',
   httpsOnly: true,
   threatProtection: true,
   protectionUpdates: false,
@@ -49,19 +59,8 @@ export interface SearchEngine {
   suggestUrl: string
 }
 
+/** Privacy-respecting engines first; Google and Bing are offered for compatibility but log queries against your IP. */
 export const SEARCH_ENGINES: Record<SearchEngineId, SearchEngine> = {
-  google: {
-    id: 'google',
-    name: 'Google',
-    searchUrl: 'https://www.google.com/search?q=%s',
-    suggestUrl: 'https://suggestqueries.google.com/complete/search?client=firefox&q=%s'
-  },
-  bing: {
-    id: 'bing',
-    name: 'Bing',
-    searchUrl: 'https://www.bing.com/search?q=%s',
-    suggestUrl: 'https://api.bing.com/osjson.aspx?query=%s'
-  },
   duckduckgo: {
     id: 'duckduckgo',
     name: 'DuckDuckGo',
@@ -73,6 +72,36 @@ export const SEARCH_ENGINES: Record<SearchEngineId, SearchEngine> = {
     name: 'Brave Search',
     searchUrl: 'https://search.brave.com/search?q=%s',
     suggestUrl: 'https://search.brave.com/api/suggest?q=%s'
+  },
+  startpage: {
+    id: 'startpage',
+    name: 'Startpage',
+    searchUrl: 'https://www.startpage.com/do/search?q=%s',
+    suggestUrl: 'https://www.startpage.com/suggestions?q=%s&format=opensearch'
+  },
+  qwant: {
+    id: 'qwant',
+    name: 'Qwant',
+    searchUrl: 'https://www.qwant.com/?q=%s',
+    suggestUrl: 'https://api.qwant.com/v3/suggest?q=%s&client=opensearch'
+  },
+  mojeek: {
+    id: 'mojeek',
+    name: 'Mojeek',
+    searchUrl: 'https://www.mojeek.com/search?q=%s',
+    suggestUrl: 'https://www.mojeek.com/suggest?q=%s'
+  },
+  google: {
+    id: 'google',
+    name: 'Google',
+    searchUrl: 'https://www.google.com/search?q=%s',
+    suggestUrl: 'https://suggestqueries.google.com/complete/search?client=firefox&q=%s'
+  },
+  bing: {
+    id: 'bing',
+    name: 'Bing',
+    searchUrl: 'https://www.bing.com/search?q=%s',
+    suggestUrl: 'https://api.bing.com/osjson.aspx?query=%s'
   }
 }
 

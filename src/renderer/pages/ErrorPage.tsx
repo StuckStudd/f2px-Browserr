@@ -55,6 +55,15 @@ const COPY: Record<ErrorKind, Copy> = {
       'If you are certain the site is safe, you can continue anyway'
     ]
   },
+  proxy: {
+    title: 'No connection through the proxy',
+    message: () => 'F2PX cannot reach the proxy or Tor client that this window is set to use.',
+    tips: [
+      'Nothing was sent directly: when a proxy or Tor is required, F2PX never falls back to a normal connection',
+      'Start Tor Browser (or your Tor client) and retry, or point F2PX at tor.exe in Privacy center',
+      'Check the proxy address in Privacy center if you use your own proxy'
+    ]
+  },
   generic: {
     title: 'Page failed to load',
     message: () => 'Something went wrong while loading this page.',
@@ -143,6 +152,18 @@ export function ErrorPage() {
           ) : (
             <Button variant="primary" icon="reload" onClick={retry}>
               {kind === 'crash' ? 'Reload' : 'Retry'}
+            </Button>
+          )}
+          {kind === 'proxy' && (
+            <Button
+              variant="ghost"
+              icon="settings"
+              onClick={() => {
+                call('net.refresh').then(() => undefined, () => undefined)
+                call('page.navigate', 'f2px://privacy', { newTab: true }).then(() => undefined, () => undefined)
+              }}
+            >
+              Network settings
             </Button>
           )}
           {kind === 'certificate' && (

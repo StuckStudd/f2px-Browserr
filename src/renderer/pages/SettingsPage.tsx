@@ -1,11 +1,13 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { DNS_PROVIDERS, SEARCH_ENGINE_LIST } from '@shared/settings'
+import { detectPrivacyLevel, type NamedPrivacyLevel } from '@shared/privacy'
 import { SHORTCUTS } from '@shared/shortcuts'
 import type { ClearDataOptions, PrivacyStats, SecurityStatus, Settings, ThreatListStatus, UpdateStatus } from '@shared/types'
 import { isWebUrl } from '@shared/url'
 import { Button, Checkbox, Segmented, Select, Toggle } from '@renderer/components/Controls'
 import { Dialog, Field } from '@renderer/components/Dialog'
 import { Icon, type IconName } from '@renderer/components/Icon'
+import { Row, Section, cleanError } from '@renderer/components/SettingsParts'
 import { useToast } from '@renderer/components/Toast'
 import { call, fire } from '@renderer/lib/api'
 import { PageFrame } from './PageFrame'
@@ -26,32 +28,6 @@ const SECTIONS: { id: string; label: string; icon: IconName }[] = [
   { id: 'shortcuts', label: 'Shortcuts', icon: 'keyboard' },
   { id: 'about', label: 'About', icon: 'info' }
 ]
-
-function Row({ label, hint, children, stack }: { label: string; hint?: string; children: ReactNode; stack?: boolean }) {
-  return (
-    <div className={`srow ${stack ? 'srow--stack' : ''}`}>
-      <div className="srow__text">
-        <div className="srow__label">{label}</div>
-        {hint && <div className="srow__hint">{hint}</div>}
-      </div>
-      <div className="srow__control">{children}</div>
-    </div>
-  )
-}
-
-function Section({ id, title, children }: { id: string; title: string; children: ReactNode }) {
-  return (
-    <section className="ssec" id={`sec-${id}`} data-section={id}>
-      <h2 className="ssec__title">
-        <span className="label">{title}</span>
-        <span className="ssec__line" />
-      </h2>
-      {children}
-    </section>
-  )
-}
-
-const cleanError = (e: Error): string => e.message.replace(/^Error invoking remote method '[^']+': (Error: )?/, '')
 
 // ── controls reused in several sections ─────────────────────────────────
 function SearchEngineRow({ settings, update }: Props) {
@@ -514,6 +490,23 @@ export function SettingsPage({ settings, update }: Props) {
           </Section>
 
           <Section id="privacy" title="Privacy">
+            <Row label="Privacy level" hint="Standard blocks ads, trackers and fingerprinting. Strict adds cookie and referrer rules and looks the same as every F2PX user. Anonymous also routes everything through Tor. The Privacy center explains each level.">
+              <Segmented
+                label="Privacy level"
+                value={detectPrivacyLevel(settings) as NamedPrivacyLevel}
+                onChange={(level) => call('privacy.applyLevel', level).catch((e: Error) => toast(cleanError(e), 'error'))}
+                options={[
+                  { value: 'standard', label: 'Standard' },
+                  { value: 'strict', label: 'Strict' },
+                  { value: 'anonymous', label: 'Anonymous' }
+                ]}
+              />
+            </Row>
+            <Row label="Privacy center" hint="Live counters, ads and filter lists, fingerprinting, cookies, Tor / proxy, site exceptions and Fire.">
+              <Button icon="external" onClick={() => fire('ui.openPage', 'privacy')}>
+                Open
+              </Button>
+            </Row>
             <div className="pshield">
               <div className="pshield__row">
                 <span className="label">Protection</span>
@@ -583,7 +576,7 @@ export function SettingsPage({ settings, update }: Props) {
             </Row>
             {settings.threatProtection && (
               <>
-                <Row label="Update the protection list" hint="Downloads fresh lists once a day from abuse.ch (URLhaus) and GitHub (Phishing.Database). Off by default because it contacts those servers.">
+                <Row label="Update the protection lists" hint="Downloads fresh malware / phishing lists and ad / tracker filter lists once a day from abuse.ch (URLhaus), GitHub and easylist.to. Off by default because it contacts those servers.">
                   <Toggle label="Update protection list" checked={settings.protectionUpdates} onChange={(protectionUpdates) => update({ protectionUpdates })} />
                 </Row>
                 <Row label="Protection list">

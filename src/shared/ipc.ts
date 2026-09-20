@@ -3,7 +3,12 @@ import type {
   Bookmark,
   ClearDataOptions,
   DownloadRecord,
+  FilterListStatus,
   FindState,
+  FireOptions,
+  NetStatus,
+  SiteInfo,
+  SitePermission,
   HistoryEntry,
   HistoryQuery,
   OverlayMenuItem,
@@ -16,6 +21,7 @@ import type {
   ThreatListStatus,
   UpdateStatus
 } from './types'
+import type { NamedPrivacyLevel } from './privacy'
 import type { InternalPage } from './url'
 
 export const RPC_CHANNEL = 'f2px:rpc'
@@ -50,8 +56,11 @@ export interface RpcMethods {
   'ui.menuSelect': (menuId: number, itemId: string | null) => void
   'ui.openPage': (page: InternalPage) => void
   'ui.newWindow': (isPrivate: boolean) => void
+  'ui.newTorWindow': () => void
   'ui.focusPage': () => void
   'ui.print': () => void
+  'ui.savePdf': () => Promise<boolean>
+  'ui.screenshot': () => Promise<boolean>
   'ui.devtools': () => void
   'ui.fullscreen': () => void
   'ui.zoom': (dir: 'in' | 'out' | 'reset') => void
@@ -80,6 +89,25 @@ export interface RpcMethods {
   'quickAccess.reorder': (orderedIds: string[]) => void
   'quickAccess.reset': () => QuickAccessItem[]
   'privacy.stats': () => PrivacyStats
+  'privacy.applyLevel': (level: NamedPrivacyLevel) => Settings
+  'privacy.resetStats': () => void
+  'filters.status': () => FilterListStatus
+  'filters.update': () => Promise<FilterListStatus>
+  'net.status': () => Promise<NetStatus>
+  'net.refresh': () => Promise<NetStatus>
+  'favicons.data': (url: string) => Promise<string | null>
+  /** The shield popup: what is protected on the active tab's site. */
+  'site.info': () => SiteInfo | null
+  'site.setShields': (on: boolean) => SiteInfo | null
+  'site.setCookies': (allow: boolean) => SiteInfo | null
+  'site.setPermission': (origin: string, permission: string, decision: 'allow' | 'block' | null) => SiteInfo | null
+  /** Cookies, storage and cache of the active tab's site. */
+  'site.clearData': () => Promise<void>
+  'permissions.list': () => SitePermission[]
+  'permissions.reset': (origin?: string, permission?: string) => void
+  'siteRules.list': () => { site: string; shieldsOff: boolean; cookies: boolean }[]
+  'siteRules.reset': () => void
+  'privacy.fire': (options: FireOptions) => Promise<void>
   'security.status': () => SecurityStatus
   'threats.status': () => ThreatListStatus
   'threats.update': () => ThreatListStatus
@@ -106,6 +134,7 @@ export interface RpcMethods {
   'page.allowThreat': (url: string) => void
   'settings.pickDownloadFolder': () => Promise<string | null>
   'settings.pickBackground': () => Promise<string | null>
+  'settings.pickTorPath': () => Promise<string | null>
   'settings.clearBackground': () => void
   'privacy.clear': (options: ClearDataOptions) => Promise<void>
   'bookmarks.import': () => Promise<number>
@@ -122,6 +151,9 @@ export interface EventMap {
   'shell:open-downloads': undefined
   'shell:show-menu': { menuId: number; x: number; y: number; items: OverlayMenuItem[] }
   'shell:find': undefined
+  'shell:fire': undefined
+  'shell:palette': { mode: 'all' | 'tabs' }
+  'net:changed': undefined
   'shell:find-result': FindState
   'settings:changed': Settings
   'history:changed': undefined

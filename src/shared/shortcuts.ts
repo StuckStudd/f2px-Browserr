@@ -15,6 +15,11 @@
   | 'prevTab'
   | 'newWindow'
   | 'privateWindow'
+  | 'torWindow'
+  | 'palette'
+  | 'tabSearch'
+  | 'fire'
+  | 'privacy'
   | 'back'
   | 'forward'
   | 'home'
@@ -45,7 +50,7 @@ export interface KeyMatch {
 
 export interface ShortcutDef {
   action: ShortcutAction
-  group: 'Tabs' | 'Navigation' | 'Pages' | 'Window' | 'Page'
+  group: 'Tabs' | 'Navigation' | 'Pages' | 'Window' | 'Page' | 'Privacy'
   label: string
   /** Human readable, first entry is displayed in Settings. */
   display: string
@@ -86,6 +91,11 @@ export const SHORTCUTS: ShortcutDef[] = [
 
   { action: 'newWindow', group: 'Window', label: 'New window', display: 'Ctrl + N', matches: [c('n')] },
   { action: 'privateWindow', group: 'Window', label: 'Private window', display: 'Ctrl + Shift + N', matches: [c('n', { shift: true })] },
+  { action: 'torWindow', group: 'Privacy', label: 'Tor window', display: 'Ctrl + Shift + Alt + N', matches: [c('n', { shift: true, alt: true })] },
+  { action: 'fire', group: 'Privacy', label: 'Fire — clear everything', display: 'Ctrl + Shift + Del', matches: [c('delete', { shift: true })] },
+  { action: 'privacy', group: 'Privacy', label: 'Privacy center', display: 'Ctrl + Shift + P', matches: [c('p', { shift: true })] },
+  { action: 'palette', group: 'Navigation', label: 'Command palette', display: 'Ctrl + Shift + K', matches: [c('k', { shift: true })] },
+  { action: 'tabSearch', group: 'Tabs', label: 'Search tabs', display: 'Ctrl + Shift + A', matches: [c('a', { shift: true })] },
   { action: 'fullscreen', group: 'Window', label: 'Full screen', display: 'F11', matches: [{ key: 'f11' }] },
 
   { action: 'find', group: 'Page', label: 'Find in page', display: 'Ctrl + F', matches: [c('f')] },

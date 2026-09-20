@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { hostOf } from '@shared/url'
+import { call } from '@renderer/lib/api'
 
 interface FaviconProps {
   src: string | null | undefined
@@ -25,15 +26,56 @@ export function monogram(label: string): string {
   return (letters || '·').toUpperCase()
 }
 
+/**
+ * Site icons are never loaded by the interface itself: the browser UI has no network access. Remote icons are fetched by the
+ * main process (through the same proxy / Tor route as the window, without cookies or Referer) and arrive as data URLs.
+ */
+const remote = new Map<string, Promise<string | null>>()
+
+function useIconSource(src: string | null | undefined): string | null {
+  const isRemote = !!src && /^https?:\/\//i.test(src)
+  const [resolved, setResolved] = useState<string | null>(() => (src && !isRemote ? src : null))
+
+  useEffect(() => {
+    if (!src) {
+      setResolved(null)
+      return
+    }
+    if (!isRemote) {
+      setResolved(src)
+      return
+    }
+    let alive = true
+    setResolved(null)
+    let job = remote.get(src)
+    if (!job) {
+      job = call('favicons.data', src).catch(() => null)
+      remote.set(src, job)
+      // keep the cache small; a failed lookup may be retried on the next view
+      void job.then((value) => {
+        if (value === null) remote.delete(src)
+        if (remote.size > 400) remote.delete(remote.keys().next().value as string)
+      })
+    }
+    void job.then((value) => alive && setResolved(value))
+    return () => {
+      alive = false
+    }
+  }, [src, isRemote])
+
+  return resolved
+}
+
 export function Favicon({ src, label, size = 16, className }: FaviconProps) {
   const [failed, setFailed] = useState(false)
+  const resolved = useIconSource(src)
   useEffect(() => setFailed(false), [src])
 
-  if (src && !failed) {
+  if (resolved && !failed) {
     return (
       <img
         className={`favicon ${className ?? ''}`}
-        src={src}
+        src={resolved}
         width={size}
         height={size}
         alt=""

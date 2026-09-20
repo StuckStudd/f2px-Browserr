@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { SEARCH_ENGINES } from '@shared/settings'
+import { detectPrivacyLevel } from '@shared/privacy'
 import type { AppEnv, PrivacyStats, Settings, UpdateStatus } from '@shared/types'
 import { useToast } from '@renderer/components/Toast'
 import { call, fire } from '@renderer/lib/api'
@@ -32,6 +33,7 @@ export function HomePage({ settings }: { settings: Settings }) {
     call('update.status').then(setUpdate, () => undefined)
   }, [])
 
+  const level = detectPrivacyLevel(settings)
   const custom = settings.background === 'custom' && settings.backgroundImage
   const hello = greeting(now.getHours()).toUpperCase()
   const name = settings.userName.trim().toUpperCase()
@@ -47,7 +49,7 @@ export function HomePage({ settings }: { settings: Settings }) {
       <div className="home__frame" aria-hidden="true" />
 
       <div className="home__meta home__meta--tl label">
-        System / Home{env?.isPrivate ? ' · Private' : ''}
+        System / Home{env?.isTor ? ' · Tor' : env?.isPrivate ? ' · Private' : ''}
       </div>
       {settings.showClock && (
         <div className="home__meta home__meta--tr">
@@ -66,19 +68,35 @@ export function HomePage({ settings }: { settings: Settings }) {
           </p>
         )}
         <SearchBox engine={settings.searchEngine} />
-        {env?.isPrivate && (
+        {env?.isTor ? (
           <p className="home__private">
-            Private window. History and cookies are discarded when the last private window closes.
+            Tor window. All traffic goes through the Tor network with the strictest shield; nothing is kept when the last one closes.
           </p>
+        ) : (
+          env?.isPrivate && (
+            <p className="home__private">
+              Private window. History and cookies are discarded when the last private window closes.
+            </p>
+          )
         )}
         {settings.quickAccessEnabled && <QuickAccess onMessage={toast} />}
       </main>
 
-      <div className="home__meta home__meta--bc label">
-        Protection / {settings.trackerBlocking === 'off' ? 'trackers off' : settings.trackerBlocking}
+      <a
+        className="home__meta home__meta--bc label home__protection"
+        href="f2px://privacy"
+        title="Open the Privacy center"
+        onClick={(e) => {
+          e.preventDefault()
+          fire('page.navigate', 'f2px://privacy')
+        }}
+      >
+        Privacy / {env?.isTor ? 'tor window' : level === 'custom' ? 'custom' : level}
+        {!env?.isTor && settings.proxyMode === 'tor' ? ' · via tor' : ''}
+        {settings.trackerBlocking === 'off' ? ' · trackers off' : ''}
         {settings.httpsOnly ? ' · https-only' : ''}
         {stats && stats.blockedTotal > 0 ? ` · ${stats.blockedTotal.toLocaleString('en-US')} blocked` : ''}
-      </div>
+      </a>
       {update?.state === 'available' && update.url && (
         <a className="home__update label" href={update.url} onClick={(e) => { e.preventDefault(); fire('page.navigate', update.url as string, { newTab: true }) }}>
           Update / v{update.latest} available →

@@ -1,4 +1,5 @@
-import { app, net } from 'electron'
+import { app } from 'electron'
+import { netFetch } from '../network/netSession'
 import type { UpdateStatus } from '../../shared/types'
 import type { SettingsService } from '../settings/settingsService'
 import { isNewerVersion } from './version'
@@ -50,7 +51,7 @@ export class UpdateChecker {
       return this.status()
     }
     try {
-      const res = await net.fetch(feed, { credentials: 'omit', signal: AbortSignal.timeout(10_000), headers: { Accept: 'application/json' } })
+      const res = await netFetch(feed, { signal: AbortSignal.timeout(10_000), headers: { Accept: 'application/json' } })
       if (!res.ok) throw new Error(`Update server answered HTTP ${res.status}`)
       const text = await res.text()
       if (text.length > MAX_FEED_BYTES) throw new Error('Update feed is unexpectedly large')
