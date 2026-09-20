@@ -39,11 +39,14 @@ try {
     shots: [...document.querySelectorAll('[data-shot]')].map((b) => b.dataset.shot).join(',')
   })`))
   check('page loads with local fonts', info.fonts === true)
-  check('download meta shows version + size', /v1\.0\.0/.test(info.meta) && /MB/.test(info.meta), info.meta)
+  const version = JSON.parse(fs.readFileSync(path.join(PROJECT, 'package.json'), 'utf8')).version
+  check('download meta shows the current version + size', info.meta.includes(`v${version}`) && /MB/.test(info.meta), info.meta)
   check('SHA-256 values are filled in', /^[0-9a-f]{64}$/.test(info.hs) && /^[0-9a-f]{64}$/.test(info.hp))
-  check('privacy is the first content section, with 9 points', info.privacyFirst === 'privacy' && info.cells === 9, `${info.privacyFirst}/${info.cells}`)
+  check('privacy is the first content section, with 12 points', info.privacyFirst === 'privacy' && info.cells === 12, `${info.privacyFirst}/${info.cells}`)
   check('the honest "what F2PX does not do" box is present', info.honest === true)
-  check('privacy screenshot tab exists', info.shots.includes('privacy'), info.shots)
+  check('privacy screenshot tabs exist', ['privacy-center', 'shield', 'fire', 'palette'].every((n) => info.shots.split(',').includes(n)), info.shots)
+  check('the download button points at the file on this site (not GitHub)', (await pc.eval(`document.querySelector('#dl-setup').getAttribute('href')`)) === 'downloads/F2PX-Browser-Setup.exe')
+  check('the page has no release-download links to GitHub', (await pc.eval(`[...document.querySelectorAll('a[href]')].filter((a) => /github\.com.*releases/.test(a.href)).length`)) === 0)
 
   const checksums = fs.readFileSync(path.join(PROJECT, 'website', 'SHA256SUMS.txt'), 'utf8')
   check('page hashes match SHA256SUMS.txt', checksums.includes(info.hs) && checksums.includes(info.hp))
@@ -59,8 +62,8 @@ try {
   await pc.eval(`document.querySelector('[data-lang=en]').click()`)
   await sleep(300)
   check('English: hero + privacy copy switch', (await pc.eval(`document.querySelector('#dl-setup span').textContent`)) === 'Download for Windows' && /Zero requests/.test(await pc.eval(`document.querySelector('#privacy .cell h3').textContent`)))
-  await pc.eval(`document.querySelector('[data-shot=privacy]').click(); document.querySelector('#shot').scrollIntoView()`) // lazy images only load near the viewport
-  const loaded = await waitFor(async () => (await pc.eval(`document.querySelector('#shot').src.endsWith('privacy.png') && document.querySelector('#shot').complete && document.querySelector('#shot').naturalWidth`)) > 1000, 8000, 300)
+  await pc.eval(`document.querySelector('[data-shot=privacy-center]').click(); document.querySelector('#shot').scrollIntoView()`) // lazy images only load near the viewport
+  const loaded = await waitFor(async () => (await pc.eval(`document.querySelector('#shot').src.endsWith('privacy-center.png') && document.querySelector('#shot').complete && document.querySelector('#shot').naturalWidth`)) > 1000, 8000, 300)
   check('privacy screenshot loads', !!loaded)
   await pc.eval(`document.querySelector('[data-lang=ru]').click(); document.querySelector('[data-shot=home]').click()`)
   await sleep(600)

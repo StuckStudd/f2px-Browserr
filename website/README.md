@@ -21,31 +21,32 @@ npm run site:serve      # http://localhost:8080
 
 ## Публикация
 
-Сайт — обычная папка `website/`, её можно выложить на любой статический хостинг.
-Установщик весит ~98 МБ, поэтому **лучше хранить `.exe` отдельно от сайта** (у многих хостингов есть лимит на размер файла:
-Cloudflare Pages — 25 МБ, GitHub Pages — жёсткий предел 100 МБ на файл).
+Кнопка «Скачать» ведёт прямо на файл на **этом же сайте**: `downloads/F2PX-Browser-Setup.exe` (и `downloads/F2PX-Browser.exe`
+для portable-версии). Поэтому сайт нужно выкладывать вместе с папкой `downloads/`.
 
-### Вариант A (рекомендуется): сайт на хостинге, файлы в GitHub Releases
+```bash
+npm run dist            # собрать установщики в release/
+npm run site:prepare    # скопировать .exe в website/downloads/ и посчитать SHA-256 (downloads.js, SHA256SUMS.txt)
+```
 
-1. Создайте Release `v1.1.0` в репозитории и приложите к нему `release/F2PX-Browser-Setup.exe` и `release/F2PX-Browser.exe`.
-2. Подготовьте сайт со ссылками на Release (файлы при этом не копируются):
+Затем загрузите **всю папку `website/`** на свой сервер / VPS (nginx, Caddy, Apache) или на хостинг без жёсткого лимита на размер файла.
+Установщик весит ~102 МБ, поэтому:
 
-   ```bash
-   npm run site:prepare -- --base-url https://github.com/USER/REPO/releases/download/v1.1.0/
-   ```
+- **GitHub** не подойдёт для самих `.exe`: файлы больше 100 МБ он не принимает, а GitHub Pages не отдаёт файлы такого размера.
+  Поэтому `website/downloads/*.exe` намеренно в `.gitignore`: в репозитории лежит сайт, а файлы вы копируете на хостинг отдельно.
+- У Cloudflare Pages лимит 25 МБ на файл — тоже не подходит. Подойдёт свой сервер, S3-совместимое хранилище с публичным доступом
+  или любой хостинг с большими файлами.
+- Если `.exe` лежат на другом адресе, подготовьте сайт со ссылками на него (файлы при этом не копируются):
+  `npm run site:prepare -- --base-url https://example.com/files/`.
 
-3. Загрузите содержимое `website/` (без `downloads/`) на GitHub Pages / Netlify / Cloudflare Pages / любой хостинг.
-
-### Вариант B: всё на одном сервере
-
-`npm run site:prepare` (без `--base-url`) копирует `.exe` в `website/downloads/`. Загрузите всю папку `website/` на свой сервер/VPS
-(nginx, Caddy, Apache). Убедитесь, что сервер отдаёт `.exe` без ограничений по размеру.
+Проверка перед выкладкой: `npm run site:prepare && npm run test:site` открывает сайт в самом F2PX, скачивает установщик через кнопку
+и сверяет его SHA-256 с тем, что показано на странице.
 
 ## Выпуск новой версии
 
-1. Поднимите `version` в `package.json`.
-2. `npm run dist` → `npm run site:prepare` (с `--base-url` для нового тега, если используете Releases).
-3. Опубликуйте `website/`. Версия, размер и хеши на странице обновятся сами из `downloads.js`.
+1. Поднимите `version` в `package.json` и запишите изменения в `CHANGELOG.md`.
+2. `npm run dist` → `npm run site:prepare`.
+3. Загрузите `website/` (с `downloads/`) на сервер. Версия, размер и хеши на странице обновятся сами из `downloads.js`.
 
 ## Скриншоты
 

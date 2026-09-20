@@ -5,13 +5,13 @@ window.F2PX_DOWNLOADS = {
   "files": {
     "setup": {
       "name": "F2PX-Browser-Setup.exe",
-      "url": "https://github.com/StuckStudd/f2px-Browserr/releases/download/v1.1.0/F2PX-Browser-Setup.exe",
+      "url": "downloads/F2PX-Browser-Setup.exe",
       "size": 106834266,
       "sha256": "e8e4d3dcd7d22a456f51e064bfd894021ae9a66bff8969d521a2d98758af9c0e"
     },
     "portable": {
       "name": "F2PX-Browser.exe",
-      "url": "https://github.com/StuckStudd/f2px-Browserr/releases/download/v1.1.0/F2PX-Browser.exe",
+      "url": "downloads/F2PX-Browser.exe",
       "size": 106662250,
       "sha256": "789f6f812f35a66e5b72ce82d5baecb58bdfd87a4e9e82ab77cae07de07bdcac"
     }
